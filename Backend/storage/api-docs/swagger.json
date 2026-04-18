@@ -1,0 +1,986 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "SGEE API Documentation",
+    "description": "API pour la gestion des inscriptions aux concours",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Support",
+      "email": "richinellelaurence@gmail.com",
+      "url": "https://example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Enrollment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "candidate_id": {
+            "type": "integer"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date"
+          },
+          "gender": {
+            "type": "string",
+            "enum": ["male", "female", "other"]
+          },
+          "nationality": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "cni_number": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "education_level": {
+            "type": "string",
+            "enum": ["high_school", "bachelor", "master", "phd"]
+          },
+          "school_name": {
+            "type": "string"
+          },
+          "field_of_study": {
+            "type": "string"
+          },
+          "department_id": {
+            "type": "integer"
+          },
+          "filiere_id": {
+            "type": "integer"
+          },
+          "exam_center_id": {
+            "type": "integer"
+          },
+          "deposit_center_id": {
+            "type": "integer"
+          },
+          "emergency_contact_name": {
+            "type": "string"
+          },
+          "emergency_contact_phone": {
+            "type": "string"
+          },
+          "emergency_contact_relationship": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["incomplete", "submitted", "approved", "rejected"]
+          },
+          "candidate_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Candidate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email_verified": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "contest_manager", "department_head", "candidate"]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Contest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registration_start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "registration_end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["open", "closed"]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Department": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Filiere": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "department_id": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          },
+          "current_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "integer"
+          },
+          "to": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Register a new candidate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": ["first_name", "last_name", "email", "password", "password_confirmation"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Candidate registered successfully"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Login candidate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/Candidate"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/auth/verify-email": {
+      "post": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Verify email with code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": ["email", "code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully"
+          },
+          "400": {
+            "description": "Invalid verification code"
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": ["Admin/Manager Authentication"],
+        "summary": "Login admin or manager",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Logout candidate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          }
+        }
+      }
+    },
+    "/auth/profile": {
+      "put": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Update candidate profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated"
+          }
+        }
+      }
+    },
+    "/auth/password": {
+      "put": {
+        "tags": ["Candidate Authentication"],
+        "summary": "Change candidate password",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "current_password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "format": "password"
+                  },
+                  "new_password_confirmation": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "required": ["current_password", "new_password", "new_password_confirmation"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          }
+        }
+      }
+    },
+    "/enrollment/status": {
+      "get": {
+        "tags": ["Enrollment"],
+        "summary": "Get enrollment status",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollment status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "enrollment": {
+                      "$ref": "#/components/schemas/Enrollment"
+                    },
+                    "progress": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enrollment/save": {
+      "post": {
+        "tags": ["Enrollment"],
+        "summary": "Create or update enrollment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "date_of_birth": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "gender": {
+                    "type": "string"
+                  },
+                  "nationality": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "cni_number": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  },
+                  "education_level": {
+                    "type": "string"
+                  },
+                  "school_name": {
+                    "type": "string"
+                  },
+                  "field_of_study": {
+                    "type": "string"
+                  },
+                  "department_id": {
+                    "type": "integer"
+                  },
+                  "filiere_id": {
+                    "type": "integer"
+                  },
+                  "exam_center_id": {
+                    "type": "integer"
+                  },
+                  "deposit_center_id": {
+                    "type": "integer"
+                  },
+                  "emergency_contact_name": {
+                    "type": "string"
+                  },
+                  "emergency_contact_phone": {
+                    "type": "string"
+                  },
+                  "emergency_contact_relationship": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enrollment saved"
+          }
+        }
+      }
+    },
+    "/enrollment/submit": {
+      "post": {
+        "tags": ["Enrollment"],
+        "summary": "Submit enrollment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollment submitted"
+          },
+          "400": {
+            "description": "Missing required fields or documents"
+          }
+        }
+      }
+    },
+    "/enrollment/certificate": {
+      "get": {
+        "tags": ["Enrollment"],
+        "summary": "Download enrollment certificate",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate PDF file"
+          },
+          "400": {
+            "description": "Enrollment not approved yet"
+          }
+        }
+      }
+    },
+    "/contests": {
+      "get": {
+        "tags": ["Contests"],
+        "summary": "List all contests",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["open", "closed"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of contests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/contests/{contestId}": {
+      "get": {
+        "tags": ["Contests"],
+        "summary": "Get contest details",
+        "parameters": [
+          {
+            "name": "contestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contest details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contest not found"
+          }
+        }
+      }
+    },
+    "/departments": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "List all departments",
+        "responses": {
+          "200": {
+            "description": "List of departments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Department"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/filieres/by-department/{departmentId}": {
+      "get": {
+        "tags": ["Filieres"],
+        "summary": "Get filieres by department",
+        "parameters": [
+          {
+            "name": "departmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of filieres",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Filiere"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/enrollments": {
+      "get": {
+        "tags": ["Admin - Enrollment Management"],
+        "summary": "Get all enrollments with pagination",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 15,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["submitted", "approved", "rejected"]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search by name, email, or CNI number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of enrollments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "enrollments": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Enrollment"
+                      }
+                    },
+                    "pagination": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/enrollments/{enrollmentId}/approve": {
+      "post": {
+        "tags": ["Admin - Enrollment Management"],
+        "summary": "Approve enrollment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Enrollment approved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "enrollment": {
+                      "$ref": "#/components/schemas/Enrollment"
+                    },
+                    "candidate_code": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot approve non-submitted enrollment"
+          }
+        }
+      }
+    },
+    "/admin/enrollments/{enrollmentId}/reject": {
+      "post": {
+        "tags": ["Admin - Enrollment Management"],
+        "summary": "Reject enrollment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "enrollmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rejection_reason": {
+                    "type": "string"
+                  }
+                },
+                "required": ["rejection_reason"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Enrollment rejected"
+          },
+          "422": {
+            "description": "Validation error - rejection_reason is required"
+          }
+        }
+      }
+    }
+  }
+}

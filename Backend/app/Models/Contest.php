@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Contest extends Model
 {
@@ -81,7 +82,8 @@ class Contest extends Model
         // 1. Le statut n'est pas 'closed', 'ongoing', ou 'completed' ET
         // 2. La date de fin d'inscription n'est pas encore passée (now() <= registration_end_date)
         $closedStatuses = ['closed', 'ongoing', 'completed'];
-        return !in_array($this->status, $closedStatuses) && now()->lte($this->registration_end_date);
+
+        return ! in_array($this->status, $closedStatuses) && now()->lte($this->registration_end_date);
     }
 
     public function getParticipantCount()
@@ -92,7 +94,7 @@ class Contest extends Model
     public function checkAgeRequirements($dateOfBirth)
     {
         // Si pas de critères d'âge, le candidat est accepté
-        if (!$this->min_age && !$this->max_age) {
+        if (! $this->min_age && ! $this->max_age) {
             return [
                 'valid' => true,
                 'message' => null,
@@ -100,7 +102,7 @@ class Contest extends Model
         }
 
         // Calculer l'âge du candidat
-        $birthDate = \Carbon\Carbon::parse($dateOfBirth);
+        $birthDate = Carbon::parse($dateOfBirth);
         $age = $birthDate->diffInYears(now());
 
         // Vérifier l'âge minimum

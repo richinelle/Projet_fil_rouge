@@ -2,19 +2,18 @@
 
 namespace App\Services;
 
-use App\Models\Enrollment;
-use App\Models\EmailDeliveryLog;
 use App\Mail\EnrollmentConfirmationMail;
+use App\Models\EmailDeliveryLog;
+use App\Models\Enrollment;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
 
 class EnrollmentEmailService
 {
     /**
      * Send confirmation email for enrollment submission
-     * 
-     * @param Enrollment $enrollment
+     *
      * @return bool Success status
      */
     public function sendConfirmationEmail(Enrollment $enrollment): bool
@@ -22,43 +21,41 @@ class EnrollmentEmailService
         try {
             // Get candidate email
             $candidateEmail = $enrollment->candidate->email;
-            
+
             // Validate email format
-            if (!$this->validateEmailFormat($candidateEmail)) {
+            if (! $this->validateEmailFormat($candidateEmail)) {
                 $this->logEmailDelivery($enrollment, 'invalid_email', 'Invalid email format');
                 Log::warning("Invalid email format for candidate {$enrollment->candidate_id}: {$candidateEmail}");
+
                 return false;
             }
-            
+
             // Get email template
             $template = $this->getEmailTemplate();
-            
+
             // Substitute placeholders
             $subject = $this->substituteTemplatePlaceholders($template['subject'], $enrollment);
             $body = $this->substituteTemplatePlaceholders($template['body'], $enrollment);
-            
+
             // Send email using Mailable
             Mail::to($candidateEmail)->send(new EnrollmentConfirmationMail($enrollment, $subject, $body));
-            
+
             // Log successful delivery
             $this->logEmailDelivery($enrollment, 'sent', null);
             Log::info("Confirmation email sent successfully to {$candidateEmail} for enrollment {$enrollment->id}");
-            
+
             return true;
         } catch (\Exception $e) {
             // Log failure
             $this->logEmailDelivery($enrollment, 'failed', $e->getMessage());
             Log::error("Failed to send confirmation email for enrollment {$enrollment->id}: {$e->getMessage()}");
-            
+
             return false;
         }
     }
-    
+
     /**
      * Validate email address format
-     * 
-     * @param string $email
-     * @return bool
      */
     private function validateEmailFormat(string $email): bool
     {
@@ -66,32 +63,30 @@ class EnrollmentEmailService
             ['email' => $email],
             ['email' => 'required|email']
         );
-        
-        return !$validator->fails();
+
+        return ! $validator->fails();
     }
-    
+
     /**
      * Get email template with placeholders
-     * 
+     *
      * @return array Template with subject and body
      */
     private function getEmailTemplate(): array
     {
         // Try to get template from config
         $template = config('email-templates.enrollment_confirmation');
-        
+
         // If not found, use default fallback
-        if (!$template) {
+        if (! $template) {
             $template = $this->getDefaultTemplate();
         }
-        
+
         return $template;
     }
-    
+
     /**
      * Get default fallback template
-     * 
-     * @return array
      */
     private function getDefaultTemplate(): array
     {
@@ -151,34 +146,26 @@ class EnrollmentEmailService
 HTML
         ];
     }
-    
+
     /**
      * Replace placeholders in template with actual values
-     * 
-     * @param string $template
-     * @param Enrollment $enrollment
-     * @return string
      */
     private function substituteTemplatePlaceholders(string $template, Enrollment $enrollment): string
     {
         $submittedAt = $enrollment->submitted_at ?? now();
-        
+
         $replacements = [
-            '{candidate_name}' => $enrollment->full_name ?? $enrollment->candidate->first_name . ' ' . $enrollment->candidate->last_name,
+            '{candidate_name}' => $enrollment->full_name ?? $enrollment->candidate->first_name.' '.$enrollment->candidate->last_name,
             '{enrollment_id}' => $enrollment->id,
             '{submission_date}' => $submittedAt->format('d/m/Y'),
             '{submission_time}' => $submittedAt->format('H:i'),
         ];
-        
+
         return str_replace(array_keys($replacements), array_values($replacements), $template);
     }
-    
+
     /**
      * Log email delivery event
-     * 
-     * @param Enrollment $enrollment
-     * @param string $status
-     * @param string|null $error
      */
     private function logEmailDelivery(Enrollment $enrollment, string $status, ?string $error = null): void
     {
@@ -187,7 +174,7 @@ HTML
                 'enrollment_id' => $enrollment->id,
                 'candidate_id' => $enrollment->candidate_id,
                 'email_address' => $enrollment->candidate->email,
-                'subject' => 'Confirmation de candidature - Dossier #' . $enrollment->id,
+                'subject' => 'Confirmation de candidature - Dossier #'.$enrollment->id,
                 'status' => $status,
                 'error_message' => $error,
                 'sent_at' => $status === 'sent' ? now() : null,

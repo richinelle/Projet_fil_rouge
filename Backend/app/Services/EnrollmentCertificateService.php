@@ -25,10 +25,10 @@ class EnrollmentCertificateService
         ];
 
         $pdf = Pdf::loadView('emails.enrollment-certificate', $data);
-        
+
         // Generate filename
-        $filename = 'fiche_inscription_' . $enrollment->id . '_' . $candidateCode . '.pdf';
-        $path = 'certificates/' . $filename;
+        $filename = 'fiche_inscription_'.$enrollment->id.'_'.$candidateCode.'.pdf';
+        $path = 'certificates/'.$filename;
 
         // Store PDF
         Storage::disk('local')->put($path, $pdf->output());
@@ -41,12 +41,12 @@ class EnrollmentCertificateService
      */
     public static function getCertificatePath(Enrollment $enrollment): ?string
     {
-        if (!$enrollment->candidate_code) {
+        if (! $enrollment->candidate_code) {
             return null;
         }
 
-        $filename = 'fiche_inscription_' . $enrollment->id . '_' . $enrollment->candidate_code . '.pdf';
-        $path = 'certificates/' . $filename;
+        $filename = 'fiche_inscription_'.$enrollment->id.'_'.$enrollment->candidate_code.'.pdf';
+        $path = 'certificates/'.$filename;
 
         if (Storage::disk('local')->exists($path)) {
             return Storage::disk('local')->path($path);
@@ -60,15 +60,16 @@ class EnrollmentCertificateService
      */
     public static function deleteCertificate(Enrollment $enrollment): bool
     {
-        if (!$enrollment->candidate_code) {
+        if (! $enrollment->candidate_code) {
             return false;
         }
 
-        $filename = 'fiche_inscription_' . $enrollment->id . '_' . $enrollment->candidate_code . '.pdf';
-        $path = 'certificates/' . $filename;
+        $filename = 'fiche_inscription_'.$enrollment->id.'_'.$enrollment->candidate_code.'.pdf';
+        $path = 'certificates/'.$filename;
 
         if (Storage::disk('local')->exists($path)) {
             Storage::disk('local')->delete($path);
+
             return true;
         }
 

@@ -36,7 +36,7 @@ class DepartmentController extends Controller
     {
         $department = Department::with('filieres')->find($id);
 
-        if (!$department) {
+        if (! $department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
 
@@ -49,13 +49,13 @@ class DepartmentController extends Controller
     {
         $department = Department::find($id);
 
-        if (!$department) {
+        if (! $department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
 
         $validated = $request->validate([
-            'name' => 'string|unique:departments,name,' . $id,
-            'code' => 'string|unique:departments,code,' . $id,
+            'name' => 'string|unique:departments,name,'.$id,
+            'code' => 'string|unique:departments,code,'.$id,
             'description' => 'nullable|string',
         ]);
 
@@ -71,7 +71,7 @@ class DepartmentController extends Controller
     {
         $department = Department::find($id);
 
-        if (!$department) {
+        if (! $department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
 
@@ -84,7 +84,7 @@ class DepartmentController extends Controller
     {
         $department = Department::find($id);
 
-        if (!$department) {
+        if (! $department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
 

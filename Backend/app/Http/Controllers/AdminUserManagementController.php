@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Candidate;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -44,7 +44,7 @@ class AdminUserManagementController extends Controller
             ->map(function ($candidate) {
                 return [
                     'id' => $candidate->id,
-                    'name' => $candidate->first_name . ' ' . $candidate->last_name,
+                    'name' => $candidate->first_name.' '.$candidate->last_name,
                     'first_name' => $candidate->first_name,
                     'last_name' => $candidate->last_name,
                     'email' => $candidate->email,
@@ -79,7 +79,7 @@ class AdminUserManagementController extends Controller
             ->map(function ($candidate) {
                 return [
                     'id' => $candidate->id,
-                    'name' => $candidate->first_name . ' ' . $candidate->last_name,
+                    'name' => $candidate->first_name.' '.$candidate->last_name,
                     'email' => $candidate->email,
                     'created_at' => $candidate->created_at,
                 ];
@@ -150,13 +150,13 @@ class AdminUserManagementController extends Controller
     {
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
         $validated = $request->validate([
             'name' => 'string',
-            'email' => 'email|unique:users,email,' . $userId,
+            'email' => 'email|unique:users,email,'.$userId,
             'phone' => 'nullable|string',
             'organization' => 'nullable|string',
             'bio' => 'nullable|string',
@@ -177,7 +177,7 @@ class AdminUserManagementController extends Controller
     {
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
@@ -200,11 +200,11 @@ class AdminUserManagementController extends Controller
     {
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
 
         return response()->json([
             'message' => 'User status updated successfully',
@@ -219,7 +219,7 @@ class AdminUserManagementController extends Controller
     {
         $user = User::find($userId);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
@@ -240,7 +240,7 @@ class AdminUserManagementController extends Controller
     {
         $candidate = Candidate::find($candidateId);
 
-        if (!$candidate) {
+        if (! $candidate) {
             return response()->json(['message' => 'Candidate not found'], 404);
         }
 
@@ -285,7 +285,7 @@ class AdminUserManagementController extends Controller
             ->map(function ($candidate) {
                 return [
                     'id' => $candidate->id,
-                    'name' => $candidate->first_name . ' ' . $candidate->last_name,
+                    'name' => $candidate->first_name.' '.$candidate->last_name,
                     'email' => $candidate->email,
                     'type' => 'candidate',
                 ];
@@ -309,7 +309,7 @@ class AdminUserManagementController extends Controller
                 return [
                     'id' => $candidate->id,
                     'type' => 'candidate_registration',
-                    'user_name' => $candidate->first_name . ' ' . $candidate->last_name,
+                    'user_name' => $candidate->first_name.' '.$candidate->last_name,
                     'user_email' => $candidate->email,
                     'action' => 'S\'est inscrit',
                     'timestamp' => $candidate->created_at,
@@ -325,7 +325,7 @@ class AdminUserManagementController extends Controller
                     'type' => 'user_creation',
                     'user_name' => $user->name,
                     'user_email' => $user->email,
-                    'action' => 'Compte ' . $user->role . ' créé',
+                    'action' => 'Compte '.$user->role.' créé',
                     'timestamp' => $user->created_at,
                 ];
             });

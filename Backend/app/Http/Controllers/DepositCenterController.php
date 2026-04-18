@@ -10,6 +10,7 @@ class DepositCenterController extends Controller
     public function index()
     {
         $depositCenters = DepositCenter::all();
+
         return response()->json([
             'deposit_centers' => $depositCenters,
         ]);
@@ -38,7 +39,7 @@ class DepositCenterController extends Controller
     {
         $depositCenter = DepositCenter::find($id);
 
-        if (!$depositCenter) {
+        if (! $depositCenter) {
             return response()->json(['message' => 'Deposit center not found'], 404);
         }
 
@@ -51,7 +52,7 @@ class DepositCenterController extends Controller
     {
         $depositCenter = DepositCenter::find($id);
 
-        if (!$depositCenter) {
+        if (! $depositCenter) {
             return response()->json(['message' => 'Deposit center not found'], 404);
         }
 
@@ -76,7 +77,7 @@ class DepositCenterController extends Controller
     {
         $depositCenter = DepositCenter::find($id);
 
-        if (!$depositCenter) {
+        if (! $depositCenter) {
             return response()->json(['message' => 'Deposit center not found'], 404);
         }
 

@@ -18,7 +18,7 @@ class LogAuthAttempts
                 'method' => $request->method(),
                 'path' => $request->path(),
                 'authHeader' => $request->header('Authorization') ? 'present' : 'missing',
-                'authHeaderValue' => substr($request->header('Authorization') ?? '', 0, 20) . '...',
+                'authHeaderValue' => substr($request->header('Authorization') ?? '', 0, 20).'...',
             ]);
         }
 

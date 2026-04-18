@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Enrollment;
 use App\Models\Notification;
 use App\Models\User;
-use App\Models\Enrollment;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -14,13 +16,13 @@ class NotificationService
     public static function notifyCandidateOnEnrollmentApproval(Enrollment $enrollment)
     {
         $candidate = $enrollment->candidate;
-        
+
         if ($candidate && $candidate->user) {
             Notification::create([
                 'user_id' => $candidate->user->id,
                 'type' => 'enrollment_approved',
-                'title' => 'Candidature approuvée - Code: ' . $enrollment->candidate_code,
-                'message' => 'Félicitations! Votre candidature a été approuvée. Votre code candidat est: ' . $enrollment->candidate_code . '. Consultez votre fiche d\'inscription.',
+                'title' => 'Candidature approuvée - Code: '.$enrollment->candidate_code,
+                'message' => 'Félicitations! Votre candidature a été approuvée. Votre code candidat est: '.$enrollment->candidate_code.'. Consultez votre fiche d\'inscription.',
                 'data' => [
                     'enrollment_id' => $enrollment->id,
                     'candidate_id' => $enrollment->candidate_id,
@@ -39,13 +41,13 @@ class NotificationService
     public static function notifyCandidateOnEnrollmentRejection(Enrollment $enrollment)
     {
         $candidate = $enrollment->candidate;
-        
+
         if ($candidate && $candidate->user) {
             Notification::create([
                 'user_id' => $candidate->user->id,
                 'type' => 'enrollment_rejected',
                 'title' => 'Candidature rejetée',
-                'message' => 'Votre candidature a été rejetée. Raison: ' . $enrollment->rejection_reason,
+                'message' => 'Votre candidature a été rejetée. Raison: '.$enrollment->rejection_reason,
                 'data' => [
                     'enrollment_id' => $enrollment->id,
                     'candidate_id' => $enrollment->candidate_id,
@@ -62,7 +64,7 @@ class NotificationService
     public static function notifyCandidateOnEnrollmentSubmission(Enrollment $enrollment)
     {
         $candidate = $enrollment->candidate;
-        
+
         if ($candidate && $candidate->user) {
             Notification::create([
                 'user_id' => $candidate->user->id,
@@ -85,7 +87,7 @@ class NotificationService
     {
         // Récupérer tous les admins
         $admins = User::where('role', 'admin')->get();
-        
+
         // Récupérer les documents de l'enrollment
         $documents = $enrollment->documents()->get()->map(function ($doc) {
             return [
@@ -95,7 +97,7 @@ class NotificationService
                 'path' => $doc->file_path,
             ];
         })->toArray();
-        
+
         foreach ($admins as $admin) {
             Notification::create([
                 'user_id' => $admin->id,
@@ -125,7 +127,7 @@ class NotificationService
         // Récupérer le responsable du département
         if ($enrollment->department && $enrollment->department->head) {
             $head = $enrollment->department->head;
-            
+
             Notification::create([
                 'user_id' => $head->id,
                 'type' => 'enrollment_submitted',
@@ -150,7 +152,7 @@ class NotificationService
     {
         if ($enrollment->department && $enrollment->department->head) {
             $head = $enrollment->department->head;
-            
+
             Notification::create([
                 'user_id' => $head->id,
                 'type' => 'enrollment_updated',
@@ -175,7 +177,7 @@ class NotificationService
     {
         if ($enrollment->department && $enrollment->department->head) {
             $head = $enrollment->department->head;
-            
+
             Notification::create([
                 'user_id' => $head->id,
                 'type' => 'enrollment_deleted',
@@ -224,6 +226,7 @@ class NotificationService
         if ($notification) {
             $notification->markAsRead();
         }
+
         return $notification;
     }
 
@@ -249,39 +252,40 @@ class NotificationService
 
     /**
      * Send enrollment confirmation email
-     * 
-     * @param Enrollment $enrollment
+     *
      * @return bool Success status
      */
     public static function sendEnrollmentConfirmationEmail(Enrollment $enrollment): bool
     {
         try {
-            $emailService = new \App\Services\EnrollmentEmailService();
+            $emailService = new EnrollmentEmailService;
+
             return $emailService->sendConfirmationEmail($enrollment);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to send enrollment confirmation email: {$e->getMessage()}");
+            Log::error("Failed to send enrollment confirmation email: {$e->getMessage()}");
+
             return false;
         }
     }
 
     /**
      * Send enrollment rejection email
-     * 
-     * @param Enrollment $enrollment
+     *
      * @return bool Success status
      */
     public static function sendEnrollmentRejectionEmail(Enrollment $enrollment): bool
     {
         try {
             $candidate = $enrollment->candidate;
-            if (!$candidate || !$candidate->email) {
-                \Illuminate\Support\Facades\Log::warning("Cannot send rejection email: candidate or email missing for enrollment {$enrollment->id}");
+            if (! $candidate || ! $candidate->email) {
+                Log::warning("Cannot send rejection email: candidate or email missing for enrollment {$enrollment->id}");
+
                 return false;
             }
 
             // Get email template
             $template = config('email-templates.enrollment_rejection');
-            if (!$template) {
+            if (! $template) {
                 $template = self::getDefaultRejectionTemplate();
             }
 
@@ -294,24 +298,26 @@ class NotificationService
 
             $body = str_replace(
                 ['{candidate_name}', '{enrollment_id}', '{rejection_reason}'],
-                [$enrollment->full_name ?? $candidate->first_name . ' ' . $candidate->last_name, $enrollment->id, $enrollment->rejection_reason ?? 'Non spécifiée'],
+                [$enrollment->full_name ?? $candidate->first_name.' '.$candidate->last_name, $enrollment->id, $enrollment->rejection_reason ?? 'Non spécifiée'],
                 $template['body']
             );
 
             // Send email
-            \Illuminate\Support\Facades\Mail::raw($body, function ($mail) use ($candidate, $subject) {
+            Mail::raw($body, function ($mail) use ($candidate, $subject) {
                 $mail->to($candidate->email)
                     ->subject($subject)
                     ->html($body);
             });
 
-            \Illuminate\Support\Facades\Log::info("Rejection email sent successfully to {$candidate->email} for enrollment {$enrollment->id}");
+            Log::info("Rejection email sent successfully to {$candidate->email} for enrollment {$enrollment->id}");
+
             return true;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to send enrollment rejection email: {$e->getMessage()}", [
+            Log::error("Failed to send enrollment rejection email: {$e->getMessage()}", [
                 'enrollment_id' => $enrollment->id,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return false;
         }
     }
@@ -381,24 +387,23 @@ HTML
 
     /**
      * Send enrollment approval email with candidate code and certificate
-     * 
-     * @param Enrollment $enrollment
-     * @param string $candidateCode
+     *
      * @return bool Success status
      */
     public static function sendEnrollmentApprovalEmail(Enrollment $enrollment, string $candidateCode): bool
     {
         try {
             $candidate = $enrollment->candidate;
-            if (!$candidate || !$candidate->email) {
-                \Illuminate\Support\Facades\Log::warning("Cannot send approval email: candidate or email missing for enrollment {$enrollment->id}");
+            if (! $candidate || ! $candidate->email) {
+                Log::warning("Cannot send approval email: candidate or email missing for enrollment {$enrollment->id}");
+
                 return false;
             }
 
-            $subject = 'Candidature Approuvée - Code Candidat: ' . $candidateCode;
+            $subject = 'Candidature Approuvée - Code Candidat: '.$candidateCode;
             $message = "Félicitations!\n\n";
             $message .= "Votre candidature a été approuvée.\n\n";
-            $message .= "Votre code candidat: " . $candidateCode . "\n\n";
+            $message .= 'Votre code candidat: '.$candidateCode."\n\n";
             $message .= "Veuillez conserver ce code pour vos démarches futures.\n\n";
             $message .= "Vous pouvez télécharger votre fiche d'inscription depuis votre tableau de bord.\n\n";
             $message .= "Cordialement,\nL'équipe d'administration";
@@ -406,21 +411,21 @@ HTML
             // Try to generate and attach certificate, but don't fail if it doesn't work
             $certificatePath = null;
             try {
-                $certificatePath = \App\Services\EnrollmentCertificateService::generateCertificate($enrollment, $candidateCode);
-                if (!$certificatePath || !file_exists($certificatePath)) {
+                $certificatePath = EnrollmentCertificateService::generateCertificate($enrollment, $candidateCode);
+                if (! $certificatePath || ! file_exists($certificatePath)) {
                     $certificatePath = null;
                 }
             } catch (\Exception $pdfError) {
-                \Illuminate\Support\Facades\Log::warning("Could not generate certificate for email: {$pdfError->getMessage()}");
+                Log::warning("Could not generate certificate for email: {$pdfError->getMessage()}");
             }
 
             // Send email with or without attachment
-            \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($candidate, $subject, $certificatePath) {
+            Mail::raw($message, function ($mail) use ($candidate, $subject, $certificatePath) {
                 $mail->to($candidate->email)->subject($subject);
-                
+
                 if ($certificatePath && file_exists($certificatePath)) {
                     $mail->attach($certificatePath, [
-                        'as' => 'fiche_inscription_' . basename($certificatePath),
+                        'as' => 'fiche_inscription_'.basename($certificatePath),
                         'mime' => 'application/pdf',
                     ]);
                 }
@@ -428,10 +433,11 @@ HTML
 
             return true;
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to send enrollment approval email: {$e->getMessage()}", [
+            Log::error("Failed to send enrollment approval email: {$e->getMessage()}", [
                 'enrollment_id' => $enrollment->id,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return false;
         }
     }

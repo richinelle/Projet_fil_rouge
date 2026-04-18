@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Filiere;
 use App\Models\Department;
+use App\Models\Filiere;
 use Illuminate\Http\Request;
 
 class FiliereController extends Controller
@@ -38,7 +38,7 @@ class FiliereController extends Controller
     {
         $filiere = Filiere::with('department')->find($id);
 
-        if (!$filiere) {
+        if (! $filiere) {
             return response()->json(['message' => 'Filière not found'], 404);
         }
 
@@ -51,14 +51,14 @@ class FiliereController extends Controller
     {
         $filiere = Filiere::find($id);
 
-        if (!$filiere) {
+        if (! $filiere) {
             return response()->json(['message' => 'Filière not found'], 404);
         }
 
         $validated = $request->validate([
             'department_id' => 'exists:departments,id',
             'name' => 'string',
-            'code' => 'string|unique:filieres,code,' . $id,
+            'code' => 'string|unique:filieres,code,'.$id,
             'description' => 'nullable|string',
         ]);
 
@@ -74,7 +74,7 @@ class FiliereController extends Controller
     {
         $filiere = Filiere::find($id);
 
-        if (!$filiere) {
+        if (! $filiere) {
             return response()->json(['message' => 'Filière not found'], 404);
         }
 
@@ -87,7 +87,7 @@ class FiliereController extends Controller
     {
         $department = Department::find($departmentId);
 
-        if (!$department) {
+        if (! $department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
 
@@ -103,7 +103,7 @@ class FiliereController extends Controller
     {
         $filiere = Filiere::find($id);
 
-        if (!$filiere) {
+        if (! $filiere) {
             return response()->json(['message' => 'Filière not found'], 404);
         }
 

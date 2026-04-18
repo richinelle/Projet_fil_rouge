@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Enrollment;
 use App\Models\Candidate;
+use App\Models\Enrollment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class EnrollmentApprovalRejectionTest extends TestCase
 {
@@ -27,7 +27,7 @@ class EnrollmentApprovalRejectionTest extends TestCase
         $candidate = Candidate::factory()->create();
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'status' => 'submitted'
+            'status' => 'submitted',
         ]);
 
         $response = $this->actingAs($this->admin, 'api-users')
@@ -43,7 +43,7 @@ class EnrollmentApprovalRejectionTest extends TestCase
         $candidate = Candidate::factory()->create();
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'status' => 'incomplete'
+            'status' => 'incomplete',
         ]);
 
         $response = $this->actingAs($this->admin, 'api-users')
@@ -57,12 +57,12 @@ class EnrollmentApprovalRejectionTest extends TestCase
         $candidate = Candidate::factory()->create();
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'status' => 'submitted'
+            'status' => 'submitted',
         ]);
 
         $response = $this->actingAs($this->admin, 'api-users')
             ->postJson("/api/admin/enrollments/{$enrollment->id}/reject", [
-                'rejection_reason' => 'Documents incomplets'
+                'rejection_reason' => 'Documents incomplets',
             ]);
 
         $response->assertStatus(200);
@@ -75,7 +75,7 @@ class EnrollmentApprovalRejectionTest extends TestCase
         $candidate = Candidate::factory()->create();
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'status' => 'submitted'
+            'status' => 'submitted',
         ]);
 
         $response = $this->actingAs($this->admin, 'api-users')
@@ -89,12 +89,12 @@ class EnrollmentApprovalRejectionTest extends TestCase
         $candidate = Candidate::factory()->create();
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'status' => 'incomplete'
+            'status' => 'incomplete',
         ]);
 
         $response = $this->actingAs($this->admin, 'api-users')
             ->postJson("/api/admin/enrollments/{$enrollment->id}/reject", [
-                'rejection_reason' => 'Test reason'
+                'rejection_reason' => 'Test reason',
             ]);
 
         $response->assertStatus(400);
@@ -104,14 +104,14 @@ class EnrollmentApprovalRejectionTest extends TestCase
     {
         $candidate1 = Candidate::factory()->create();
         $candidate2 = Candidate::factory()->create();
-        
+
         $enrollment1 = Enrollment::factory()->create([
             'candidate_id' => $candidate1->id,
-            'status' => 'submitted'
+            'status' => 'submitted',
         ]);
         $enrollment2 = Enrollment::factory()->create([
             'candidate_id' => $candidate2->id,
-            'status' => 'submitted'
+            'status' => 'submitted',
         ]);
 
         $this->actingAs($this->admin, 'api-users')
@@ -125,7 +125,7 @@ class EnrollmentApprovalRejectionTest extends TestCase
 
         $this->assertEquals('approved', $enrollment1->fresh()->status);
         $this->assertEquals('approved', $enrollment2->fresh()->status);
-        
+
         $this->assertNotEquals(
             $enrollment1->fresh()->candidate_code,
             $enrollment2->fresh()->candidate_code

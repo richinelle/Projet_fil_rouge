@@ -2,12 +2,10 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Enrollment;
 use App\Models\Candidate;
-use App\Models\Department;
-use App\Models\Filiere;
+use App\Models\Enrollment;
 use App\Repositories\EnrollmentRepository;
+use Tests\TestCase;
 
 class EnrollmentRepositoryPropertyTest extends TestCase
 {
@@ -16,16 +14,16 @@ class EnrollmentRepositoryPropertyTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new EnrollmentRepository();
+        $this->repository = new EnrollmentRepository;
     }
 
     /**
      * Property 5: Search Filters by Candidate Name
      * **Validates: Requirements 2.2**
-     * 
+     *
      * For any search query and set of enrollments, the list SHALL display
      */
-    public function testSearchFiltersByCandidateName()
+    public function test_search_filters_by_candidate_name()
     {
         // Create test data
         $candidate1 = Candidate::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
@@ -50,4 +48,4 @@ class EnrollmentRepositoryPropertyTest extends TestCase
         $results = $this->repository->searchByCandidateName('NonExistent');
         $this->assertEquals(0, $results->count());
     }
-} 
+}

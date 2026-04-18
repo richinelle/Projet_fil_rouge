@@ -7,8 +7,8 @@ class CurrencyHelper
     /**
      * Format amount as currency
      *
-     * @param float $amount
-     * @param bool $includeSymbol
+     * @param  float  $amount
+     * @param  bool  $includeSymbol
      * @return string
      */
     public static function format($amount, $includeSymbol = true)
@@ -48,7 +48,7 @@ class CurrencyHelper
     /**
      * Validate amount
      *
-     * @param float $amount
+     * @param  float  $amount
      * @return bool
      */
     public static function isValid($amount)

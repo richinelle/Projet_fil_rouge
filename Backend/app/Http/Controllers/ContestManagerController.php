@@ -11,7 +11,7 @@ class ContestManagerController extends Controller
     public function createContest(Request $request)
     {
         $userId = auth('api-users')->id();
-        
+
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'required|string',
@@ -47,7 +47,7 @@ class ContestManagerController extends Controller
         $userId = auth('api-users')->id();
         $contest = Contest::find($contestId);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
@@ -88,7 +88,7 @@ class ContestManagerController extends Controller
         $userId = auth('api-users')->id();
         $contest = Contest::find($contestId);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
@@ -143,7 +143,7 @@ class ContestManagerController extends Controller
         $userId = auth('api-users')->id();
         $contest = Contest::find($contestId);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
@@ -179,7 +179,7 @@ class ContestManagerController extends Controller
         $userId = auth('api-users')->id();
         $registration = ContestRegistration::with('contest')->find($registrationId);
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json(['message' => 'Registration not found'], 404);
         }
 

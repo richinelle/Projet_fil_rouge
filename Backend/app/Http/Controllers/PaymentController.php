@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Payment;
 use App\Models\Candidate;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Models\Contest;
+use App\Models\ContestRegistration;
+use App\Models\Enrollment;
+use App\Models\Payment;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
@@ -19,9 +21,9 @@ class PaymentController extends Controller
         ]);
 
         $candidateId = auth('api')->id();
-        $contest = \App\Models\Contest::find($validated['contest_id']);
+        $contest = Contest::find($validated['contest_id']);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
@@ -36,11 +38,11 @@ class PaymentController extends Controller
         }
 
         // Get candidate's enrollment to retrieve candidate code
-        $enrollment = \App\Models\Enrollment::where('candidate_id', $candidateId)->first();
+        $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
         $candidateCode = $enrollment ? $enrollment->candidate_code : 'UNKNOWN';
-        
-        $transactionId = 'SGEE-' . $candidateCode;
-        $verificationLink = 'http://localhost:5173/payment-verification?transaction_id=' . $transactionId;
+
+        $transactionId = 'SGEE-'.$candidateCode;
+        $verificationLink = 'http://localhost:5173/payment-verification?transaction_id='.$transactionId;
 
         $payment = Payment::create([
             'candidate_id' => $candidateId,
@@ -57,7 +59,7 @@ class PaymentController extends Controller
         $payment->update(['qr_code_path' => $qrCodePath]);
 
         // Auto-register for contest after payment
-        $registration = \App\Models\ContestRegistration::firstOrCreate(
+        $registration = ContestRegistration::firstOrCreate(
             [
                 'candidate_id' => $candidateId,
                 'contest_id' => $validated['contest_id'],
@@ -76,7 +78,7 @@ class PaymentController extends Controller
                 'title' => $contest->title,
                 'registration_fee' => $contest->registration_fee,
             ],
-            'qr_code_url' => asset('storage/' . $qrCodePath),
+            'qr_code_url' => asset('storage/'.$qrCodePath),
         ]);
     }
 
@@ -86,7 +88,7 @@ class PaymentController extends Controller
             ->with('candidate', 'contest')
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             return response()->json(['message' => 'Payment not found'], 404);
         }
 
@@ -115,13 +117,13 @@ class PaymentController extends Controller
     private function generateQrCode($data, $filename)
     {
         $qrCode = new QrCode($data);
-        $writer = new PngWriter();
+        $writer = new PngWriter;
         $result = $writer->write($qrCode);
 
-        $path = 'qr_codes/' . $filename . '.png';
-        $fullPath = storage_path('app/public/' . $path);
-        
-        if (!is_dir(dirname($fullPath))) {
+        $path = 'qr_codes/'.$filename.'.png';
+        $fullPath = storage_path('app/public/'.$path);
+
+        if (! is_dir(dirname($fullPath))) {
             mkdir(dirname($fullPath), 0755, true);
         }
 
@@ -136,7 +138,7 @@ class PaymentController extends Controller
             ->with('candidate', 'contest')
             ->first();
 
-        if (!$payment) {
+        if (! $payment) {
             return response()->json(['message' => 'Payment not found'], 404);
         }
 
@@ -147,10 +149,10 @@ class PaymentController extends Controller
 
         return response()->json([
             'payment' => $payment,
-            'qr_code_url' => asset('storage/' . $payment->qr_code_path),
+            'qr_code_url' => asset('storage/'.$payment->qr_code_path),
             'receipt_data' => [
                 'transaction_id' => $payment->transaction_id,
-                'candidate_name' => $payment->candidate->first_name . ' ' . $payment->candidate->last_name,
+                'candidate_name' => $payment->candidate->first_name.' '.$payment->candidate->last_name,
                 'candidate_email' => $payment->candidate->email,
                 'contest_title' => $payment->contest->title,
                 'amount' => $payment->amount,
@@ -183,6 +185,7 @@ class PaymentController extends Controller
             'om' => 'Orange Money',
             'mtn_money' => 'MTN Money',
         ];
+
         return $methods[$method] ?? $method;
     }
 
@@ -194,6 +197,7 @@ class PaymentController extends Controller
             'failed' => 'Échoué',
             'cancelled' => 'Annulé',
         ];
+
         return $statuses[$status] ?? $status;
     }
 
@@ -206,7 +210,7 @@ class PaymentController extends Controller
                 return [
                     'id' => $payment->id,
                     'transaction_id' => $payment->transaction_id,
-                    'candidate_name' => $payment->candidate->first_name . ' ' . $payment->candidate->last_name,
+                    'candidate_name' => $payment->candidate->first_name.' '.$payment->candidate->last_name,
                     'candidate_email' => $payment->candidate->email,
                     'contest_title' => $payment->contest->title,
                     'amount' => $payment->amount,

@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Contest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Contest>
+ * @extends Factory<Contest>
  */
 class ContestFactory extends Factory
 {
@@ -22,7 +23,7 @@ class ContestFactory extends Factory
         $contestDate = $this->faker->dateTimeBetween('+16 days', '+60 days');
 
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'title' => $this->faker->word(),
             'description' => $this->faker->sentence(),
             'requirements' => $this->faker->paragraph(),

@@ -17,11 +17,11 @@ class UserAuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             return response()->json(['message' => 'Account is inactive'], 403);
         }
 
@@ -43,6 +43,7 @@ class UserAuthController extends Controller
     public function logout()
     {
         auth('api-users')->logout();
+
         return response()->json(['message' => 'Logout successful']);
     }
 
@@ -91,7 +92,7 @@ class UserAuthController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return response()->json(['message' => 'Mot de passe actuel incorrect'], 400);
         }
 

@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
-
 class SwaggerController extends Controller
 {
     /**
@@ -20,13 +18,13 @@ class SwaggerController extends Controller
     public function json()
     {
         $swaggerPath = storage_path('api-docs/swagger.json');
-        
-        if (!file_exists($swaggerPath)) {
+
+        if (! file_exists($swaggerPath)) {
             return response()->json(['error' => 'Swagger documentation not found'], 404);
         }
 
         $swagger = json_decode(file_get_contents($swaggerPath), true);
-        
+
         return response()->json($swagger);
     }
 }

@@ -1,8 +1,12 @@
 <?php
 
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\ContestManagerMiddleware;
+use App\Http\Middleware\LogAuthAttempts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,13 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
-            \Illuminate\Http\Middleware\HandleCors::class,
-            \App\Http\Middleware\LogAuthAttempts::class,
+            HandleCors::class,
+            LogAuthAttempts::class,
         ]);
-        
+
         $middleware->alias([
-            'contest_manager' => \App\Http\Middleware\ContestManagerMiddleware::class,
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'contest_manager' => ContestManagerMiddleware::class,
+            'admin' => AdminMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

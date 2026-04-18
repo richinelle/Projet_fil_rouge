@@ -2,10 +2,10 @@
 
 /**
  * Email Templates Configuration
- * 
+ *
  * This file contains all email templates used throughout the application.
  * Templates support placeholder substitution for dynamic values.
- * 
+ *
  * Supported placeholders:
  * - {candidate_name}: Full name of the candidate
  * - {enrollment_id}: Unique enrollment identifier

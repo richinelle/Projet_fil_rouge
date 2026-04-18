@@ -46,11 +46,11 @@ class AuthController extends Controller
 
         $candidate = Candidate::where('email', $validated['email'])->first();
 
-        if (!$candidate || !Hash::check($validated['password'], $candidate->password)) {
+        if (! $candidate || ! Hash::check($validated['password'], $candidate->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
-        if (!$candidate->email_verified) {
+        if (! $candidate->email_verified) {
             return response()->json(['message' => 'Email not verified'], 403);
         }
 
@@ -76,7 +76,7 @@ class AuthController extends Controller
             ->where('expires_at', '>', now())
             ->first();
 
-        if (!$verificationCode) {
+        if (! $verificationCode) {
             return response()->json(['message' => 'Invalid or expired code'], 400);
         }
 
@@ -90,7 +90,7 @@ class AuthController extends Controller
     public function sendVerificationCode(Candidate $candidate)
     {
         $code = Str::random(6);
-        
+
         VerificationCode::create([
             'candidate_id' => $candidate->id,
             'code' => $code,
@@ -106,6 +106,7 @@ class AuthController extends Controller
     public function logout()
     {
         auth('api')->logout();
+
         return response()->json(['message' => 'Logout successful']);
     }
 
@@ -136,7 +137,7 @@ class AuthController extends Controller
             'new_password' => 'required|min:6|confirmed',
         ]);
 
-        if (!Hash::check($validated['current_password'], $candidate->password)) {
+        if (! Hash::check($validated['current_password'], $candidate->password)) {
             return response()->json(['message' => 'Mot de passe actuel incorrect'], 400);
         }
 

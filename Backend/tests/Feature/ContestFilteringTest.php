@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Candidate;
 use App\Models\Contest;
 use App\Models\User;
-use App\Models\Candidate;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,6 +13,7 @@ class ContestFilteringTest extends TestCase
     use RefreshDatabase;
 
     protected $candidate;
+
     protected $token;
 
     protected function setUp(): void
@@ -156,4 +157,3 @@ class ContestFilteringTest extends TestCase
         $this->assertFalse($closedContestData['is_open']);
     }
 }
-

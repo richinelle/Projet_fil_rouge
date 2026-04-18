@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Department;
 use App\Models\Filiere;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Filiere>
+ * @extends Factory<Filiere>
  */
 class FiliereFactory extends Factory
 {
@@ -20,7 +21,7 @@ class FiliereFactory extends Factory
         return [
             'name' => $this->faker->word(),
             'description' => $this->faker->sentence(),
-            'department_id' => \App\Models\Department::factory(),
+            'department_id' => Department::factory(),
             'code' => $this->faker->unique()->bothify('FIL-####'),
         ];
     }

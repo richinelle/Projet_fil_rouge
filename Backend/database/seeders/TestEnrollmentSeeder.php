@@ -16,7 +16,7 @@ class TestEnrollmentSeeder extends Seeder
             'date_of_birth' => '2000-01-01',
             'gender' => 'male',
             'nationality' => 'Camerounaise',
-            'id_number' => 'TEST-' . time(),
+            'id_number' => 'TEST-'.time(),
             'id_type' => 'passport',
             'cni_number' => '987654',
             'address' => 'Test Address',

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ExamCenter;
 use App\Models\DepositCenter;
+use App\Models\ExamCenter;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

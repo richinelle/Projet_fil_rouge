@@ -1,20 +1,20 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserAuthController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\ContestController;
 use App\Http\Controllers\ContestManagerController;
-use App\Http\Controllers\AdminUserManagementController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DepositCenterController;
+use App\Http\Controllers\EnrollmentController;
+use App\Http\Controllers\EnrollmentDocumentController;
+use App\Http\Controllers\ExamCenterController;
 use App\Http\Controllers\FiliereController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\ExamCenterController;
-use App\Http\Controllers\DepositCenterController;
-use App\Http\Controllers\EnrollmentDocumentController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\UserAuthController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Candidate authentication
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -38,6 +38,7 @@ Route::get('/deposit-centers', [DepositCenterController::class, 'index']);
 // Debug route to test authentication
 Route::get('/debug/auth-test', function () {
     $user = auth('api')->user();
+
     return response()->json([
         'authenticated' => auth('api')->check(),
         'user' => $user,

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Enrollment;
 use App\Models\Candidate;
+use App\Models\Enrollment;
 use App\Models\Payment;
+use App\Services\EnrollmentCertificateService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
@@ -13,27 +14,27 @@ class EnrollmentController extends Controller
     public function getEnrollmentStatus($candidateId = null)
     {
         // Si pas d'ID fourni, utiliser l'ID du candidat authentifié
-        if (!$candidateId) {
+        if (! $candidateId) {
             $candidateId = auth('api')->id();
         }
 
         $candidate = Candidate::find($candidateId);
-        
-        if (!$candidate) {
+
+        if (! $candidate) {
             return response()->json(['message' => 'Candidate not found'], 404);
         }
 
         $enrollment = $candidate->enrollment;
 
         // Si pas d'enrollment, en créer un avec les valeurs par défaut
-        if (!$enrollment) {
+        if (! $enrollment) {
             $enrollment = Enrollment::create([
                 'candidate_id' => $candidateId,
-                'full_name' => $candidate->first_name . ' ' . $candidate->last_name,
+                'full_name' => $candidate->first_name.' '.$candidate->last_name,
                 'date_of_birth' => '1990-01-01',
                 'gender' => 'male',
                 'nationality' => '',
-                'id_number' => 'TEMP-' . $candidateId . '-' . time(),
+                'id_number' => 'TEMP-'.$candidateId.'-'.time(),
                 'id_type' => 'passport',
                 'address' => '',
                 'city' => '',
@@ -62,7 +63,7 @@ class EnrollmentController extends Controller
     public function createOrUpdateEnrollment(Request $request)
     {
         $candidateId = auth('api')->id();
-        
+
         // Validation flexible - tous les champs sont optionnels pour la sauvegarde partielle
         $validated = $request->validate([
             'full_name' => 'nullable|string',
@@ -114,7 +115,7 @@ class EnrollmentController extends Controller
             return $value !== null;
         });
 
-        if (!empty($updateData)) {
+        if (! empty($updateData)) {
             $enrollment->update($updateData);
         }
 
@@ -127,10 +128,10 @@ class EnrollmentController extends Controller
     public function submitEnrollment(Request $request)
     {
         $candidateId = auth('api')->id();
-        
+
         $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
 
@@ -156,7 +157,7 @@ class EnrollmentController extends Controller
             }
         }
 
-        if (!empty($missingFields)) {
+        if (! empty($missingFields)) {
             return response()->json([
                 'message' => 'All fields are required to submit enrollment',
                 'missing_fields' => $missingFields,
@@ -190,7 +191,7 @@ class EnrollmentController extends Controller
 
         $missingDocuments = array_diff($requiredDocuments, $uploadedDocuments);
 
-        if (!empty($missingDocuments)) {
+        if (! empty($missingDocuments)) {
             return response()->json([
                 'message' => 'Missing required documents',
                 'missing_documents' => $missingDocuments,
@@ -203,7 +204,7 @@ class EnrollmentController extends Controller
             ->whereNotNull('contest_id')
             ->first();
 
-        if (!$paymentReceipt) {
+        if (! $paymentReceipt) {
             return response()->json([
                 'message' => 'Payment receipt with contest is required',
             ], 400);
@@ -215,7 +216,7 @@ class EnrollmentController extends Controller
             ->where('status', 'completed')
             ->first();
 
-        if (!$completedPayment) {
+        if (! $completedPayment) {
             return response()->json([
                 'message' => 'Payment must be completed for the selected contest before submission',
             ], 400);
@@ -252,10 +253,10 @@ class EnrollmentController extends Controller
     public function deleteEnrollment(Request $request)
     {
         $candidateId = auth('api')->id();
-        
+
         $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
 
@@ -272,13 +273,13 @@ class EnrollmentController extends Controller
     public function getEnrollmentForm($candidateId = null)
     {
         // Si pas d'ID fourni, utiliser l'ID du candidat authentifié
-        if (!$candidateId) {
+        if (! $candidateId) {
             $candidateId = auth('api')->id();
         }
 
         $candidate = Candidate::find($candidateId);
-        
-        if (!$candidate) {
+
+        if (! $candidate) {
             return response()->json(['message' => 'Candidate not found'], 404);
         }
 
@@ -389,9 +390,9 @@ class EnrollmentController extends Controller
             $search = $request->query('search'); // Optional search by name or email
 
             // Validate pagination parameters
-            $perPage = min((int)$perPage, 100); // Max 100 items per page
-            $perPage = max((int)$perPage, 1); // Min 1 item per page
-            $page = max((int)$page, 1); // Min page 1
+            $perPage = min((int) $perPage, 100); // Max 100 items per page
+            $perPage = max((int) $perPage, 1); // Min 1 item per page
+            $page = max((int) $page, 1); // Min page 1
 
             // Build query
             $query = Enrollment::with(['candidate', 'department', 'filiere']);
@@ -405,13 +406,13 @@ class EnrollmentController extends Controller
             if ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('full_name', 'like', "%{$search}%")
-                      ->orWhere('cni_number', 'like', "%{$search}%")
-                      ->orWhereHas('candidate', function ($q) use ($search) {
-                          $q->where('email', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%")
-                            ->orWhere('first_name', 'like', "%{$search}%")
-                            ->orWhere('last_name', 'like', "%{$search}%");
-                      });
+                        ->orWhere('cni_number', 'like', "%{$search}%")
+                        ->orWhereHas('candidate', function ($q) use ($search) {
+                            $q->where('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%")
+                                ->orWhere('first_name', 'like', "%{$search}%")
+                                ->orWhere('last_name', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -442,7 +443,7 @@ class EnrollmentController extends Controller
                 return [
                     'id' => $enrollment->id,
                     'candidate_id' => $enrollment->candidate_id,
-                    'candidate_name' => $enrollment->candidate ? ($enrollment->candidate->first_name . ' ' . $enrollment->candidate->last_name) : 'N/A',
+                    'candidate_name' => $enrollment->candidate ? ($enrollment->candidate->first_name.' '.$enrollment->candidate->last_name) : 'N/A',
                     'candidate_email' => $enrollment->candidate ? $enrollment->candidate->email : 'N/A',
                     'candidate_phone' => $enrollment->candidate ? $enrollment->candidate->phone : 'N/A',
                     'full_name' => $enrollment->full_name,
@@ -488,7 +489,8 @@ class EnrollmentController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error in getAllSubmittedEnrollments: ' . $e->getMessage());
+            \Log::error('Error in getAllSubmittedEnrollments: '.$e->getMessage());
+
             return response()->json([
                 'message' => 'Error fetching enrollments',
                 'error' => $e->getMessage(),
@@ -500,7 +502,7 @@ class EnrollmentController extends Controller
     {
         $enrollment = Enrollment::find($enrollmentId);
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
 
@@ -524,11 +526,12 @@ class EnrollmentController extends Controller
     {
         try {
             \Illuminate\Support\Facades\Log::info("Starting approval for enrollment: {$enrollmentId}");
-            
+
             $enrollment = Enrollment::find($enrollmentId);
 
-            if (!$enrollment) {
+            if (! $enrollment) {
                 \Illuminate\Support\Facades\Log::warning("Enrollment not found: {$enrollmentId}");
+
                 return response()->json(['message' => 'Enrollment not found'], 404);
             }
 
@@ -536,6 +539,7 @@ class EnrollmentController extends Controller
 
             if ($enrollment->status !== 'submitted') {
                 \Illuminate\Support\Facades\Log::warning("Cannot approve enrollment {$enrollmentId}. Status is '{$enrollment->status}', expected 'submitted'");
+
                 return response()->json([
                     'message' => 'Only submitted enrollments can be approved',
                     'current_status' => $enrollment->status,
@@ -543,7 +547,7 @@ class EnrollmentController extends Controller
             }
 
             // Générer un code candidat unique
-            $candidateCode = 'GS' . str_pad($enrollmentId, 4, '0', STR_PAD_LEFT);
+            $candidateCode = 'GS'.str_pad($enrollmentId, 4, '0', STR_PAD_LEFT);
             \Illuminate\Support\Facades\Log::info("Generated candidate code: {$candidateCode}");
 
             $enrollment->update([
@@ -569,7 +573,7 @@ class EnrollmentController extends Controller
                 \Illuminate\Support\Facades\Log::error("Failed to send approval email: {$e->getMessage()}");
             }
 
-            \Illuminate\Support\Facades\Log::info("Approval completed for enrollment {$enrollmentId}. Email sent: " . ($emailSent ? 'yes' : 'no'));
+            \Illuminate\Support\Facades\Log::info("Approval completed for enrollment {$enrollmentId}. Email sent: ".($emailSent ? 'yes' : 'no'));
 
             return response()->json([
                 'message' => 'Enrollment approved successfully',
@@ -582,6 +586,7 @@ class EnrollmentController extends Controller
                 'enrollmentId' => $enrollmentId,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'message' => 'Error approving enrollment',
                 'error' => $e->getMessage(),
@@ -598,7 +603,7 @@ class EnrollmentController extends Controller
         try {
             $enrollment = Enrollment::find($enrollmentId);
 
-            if (!$enrollment) {
+            if (! $enrollment) {
                 return response()->json(['message' => 'Enrollment not found'], 404);
             }
 
@@ -636,6 +641,7 @@ class EnrollmentController extends Controller
                 'enrollmentId' => $enrollmentId,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'message' => 'Error rejecting enrollment',
                 'error' => $e->getMessage(),
@@ -648,24 +654,25 @@ class EnrollmentController extends Controller
         try {
             $enrollment = Enrollment::find($enrollmentId);
 
-            if (!$enrollment) {
+            if (! $enrollment) {
                 return response()->json(['message' => 'Enrollment not found'], 404);
             }
 
-            if (!$enrollment->candidate_code) {
+            if (! $enrollment->candidate_code) {
                 return response()->json(['message' => 'Enrollment not approved yet'], 400);
             }
 
-            $certificatePath = \App\Services\EnrollmentCertificateService::getCertificatePath($enrollment);
+            $certificatePath = EnrollmentCertificateService::getCertificatePath($enrollment);
 
-            if (!$certificatePath || !file_exists($certificatePath)) {
+            if (! $certificatePath || ! file_exists($certificatePath)) {
                 // Generate certificate if it doesn't exist
-                $certificatePath = \App\Services\EnrollmentCertificateService::generateCertificate($enrollment, $enrollment->candidate_code);
+                $certificatePath = EnrollmentCertificateService::generateCertificate($enrollment, $enrollment->candidate_code);
             }
 
-            return response()->download($certificatePath, 'fiche_inscription_' . $enrollment->candidate_code . '.pdf');
+            return response()->download($certificatePath, 'fiche_inscription_'.$enrollment->candidate_code.'.pdf');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Error downloading certificate: {$e->getMessage()}");
+
             return response()->json([
                 'message' => 'Error downloading certificate',
                 'error' => $e->getMessage(),
@@ -679,24 +686,25 @@ class EnrollmentController extends Controller
             $candidateId = auth('api')->id();
             $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
 
-            if (!$enrollment) {
+            if (! $enrollment) {
                 return response()->json(['message' => 'Enrollment not found'], 404);
             }
 
-            if (!$enrollment->candidate_code) {
+            if (! $enrollment->candidate_code) {
                 return response()->json(['message' => 'Enrollment not approved yet'], 400);
             }
 
-            $certificatePath = \App\Services\EnrollmentCertificateService::getCertificatePath($enrollment);
+            $certificatePath = EnrollmentCertificateService::getCertificatePath($enrollment);
 
-            if (!$certificatePath || !file_exists($certificatePath)) {
+            if (! $certificatePath || ! file_exists($certificatePath)) {
                 // Generate certificate if it doesn't exist
-                $certificatePath = \App\Services\EnrollmentCertificateService::generateCertificate($enrollment, $enrollment->candidate_code);
+                $certificatePath = EnrollmentCertificateService::generateCertificate($enrollment, $enrollment->candidate_code);
             }
 
-            return response()->download($certificatePath, 'fiche_inscription_' . $enrollment->candidate_code . '.pdf');
+            return response()->download($certificatePath, 'fiche_inscription_'.$enrollment->candidate_code.'.pdf');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("Error downloading my certificate: {$e->getMessage()}");
+
             return response()->json([
                 'message' => 'Error downloading certificate',
                 'error' => $e->getMessage(),

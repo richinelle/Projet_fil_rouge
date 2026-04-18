@@ -12,7 +12,7 @@ class EnrollmentDocumentController extends Controller
     public function uploadDocument(Request $request)
     {
         $candidateId = auth('api')->id();
-        
+
         \Log::info('[EnrollmentDocumentController] Upload attempt', [
             'candidateId' => $candidateId,
             'authUser' => auth('api')->user(),
@@ -20,7 +20,7 @@ class EnrollmentDocumentController extends Controller
             'hasFile' => $request->hasFile('file'),
             'authHeader' => $request->header('Authorization'),
         ]);
-        
+
         $validated = $request->validate([
             'document_type' => 'required|in:bac_transcript,birth_certificate,valid_cni,photo_4x4_1,photo_4x4_2,photo_4x4_3,photo_4x4_4,payment_receipt',
             'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -29,22 +29,22 @@ class EnrollmentDocumentController extends Controller
 
         $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
 
         // Vérifier que le reçu de paiement a un concours associé
-        if ($validated['document_type'] === 'payment_receipt' && !$validated['contest_id']) {
+        if ($validated['document_type'] === 'payment_receipt' && ! $validated['contest_id']) {
             return response()->json(['message' => 'Contest ID is required for payment receipt'], 400);
         }
 
         // Vérifier que le reçu de paiement contient un QR code
         if ($validated['document_type'] === 'payment_receipt') {
             $file = $request->file('file');
-            if (!$this->hasQrCode($file)) {
+            if (! $this->hasQrCode($file)) {
                 return response()->json([
                     'message' => 'Le reçu de paiement doit contenir un code QR valide. Veuillez télécharger un reçu de paiement avec un code QR visible.',
-                    'error_code' => 'INVALID_QR_CODE'
+                    'error_code' => 'INVALID_QR_CODE',
                 ], 400);
             }
         }
@@ -52,11 +52,11 @@ class EnrollmentDocumentController extends Controller
         // Delete existing document of same type
         $query = EnrollmentDocument::where('enrollment_id', $enrollment->id)
             ->where('document_type', $validated['document_type']);
-        
+
         if ($validated['document_type'] === 'payment_receipt' && $validated['contest_id']) {
             $query->where('contest_id', $validated['contest_id']);
         }
-        
+
         $existingDoc = $query->first();
 
         if ($existingDoc) {
@@ -86,10 +86,10 @@ class EnrollmentDocumentController extends Controller
     public function getEnrollmentDocuments()
     {
         $candidateId = auth('api')->id();
-        
+
         $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
 
-        if (!$enrollment) {
+        if (! $enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
 
@@ -114,10 +114,10 @@ class EnrollmentDocumentController extends Controller
     public function deleteDocument($documentId)
     {
         $candidateId = auth('api')->id();
-        
+
         $document = EnrollmentDocument::find($documentId);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'Document not found'], 404);
         }
 
@@ -138,10 +138,10 @@ class EnrollmentDocumentController extends Controller
     public function downloadDocument($documentId)
     {
         $candidateId = auth('api')->id();
-        
+
         $document = EnrollmentDocument::find($documentId);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'Document not found'], 404);
         }
 
@@ -157,10 +157,10 @@ class EnrollmentDocumentController extends Controller
     public function viewDocument($documentId)
     {
         $candidateId = auth('api')->id();
-        
+
         $document = EnrollmentDocument::find($documentId);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'Document not found'], 404);
         }
 
@@ -171,7 +171,7 @@ class EnrollmentDocumentController extends Controller
         }
 
         // Vérifier que le fichier existe
-        if (!Storage::disk('local')->exists($document->file_path)) {
+        if (! Storage::disk('local')->exists($document->file_path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
@@ -186,12 +186,12 @@ class EnrollmentDocumentController extends Controller
     {
         $document = EnrollmentDocument::find($documentId);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'Document not found'], 404);
         }
 
         // Vérifier que le fichier existe
-        if (!Storage::disk('local')->exists($document->file_path)) {
+        if (! Storage::disk('local')->exists($document->file_path)) {
             return response()->json(['message' => 'File not found'], 404);
         }
 
@@ -222,7 +222,7 @@ class EnrollmentDocumentController extends Controller
                     $image = imagecreatefrompng($filePath);
                 }
 
-                if (!$image) {
+                if (! $image) {
                     return false;
                 }
 
@@ -232,6 +232,7 @@ class EnrollmentDocumentController extends Controller
                 // Vérifier les dimensions minimales
                 if ($width < 100 || $height < 100) {
                     imagedestroy($image);
+
                     return false;
                 }
 
@@ -246,7 +247,8 @@ class EnrollmentDocumentController extends Controller
 
             return false;
         } catch (\Exception $e) {
-            \Log::error('QR Code detection error: ' . $e->getMessage());
+            \Log::error('QR Code detection error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -255,22 +257,22 @@ class EnrollmentDocumentController extends Controller
     {
         // Vérifier les coins du QR code (carrés de positionnement)
         // Les QR codes ont des carrés noirs dans les trois coins
-        
+
         $sampleSize = min($width, $height) / 7; // Environ 1/7 de la taille
         $threshold = 128; // Seuil pour noir/blanc
-        
+
         // Vérifier le coin supérieur gauche
         $topLeftBlack = $this->isAreaDark($image, 0, 0, $sampleSize, $threshold);
-        
+
         // Vérifier le coin supérieur droit
         $topRightBlack = $this->isAreaDark($image, $width - $sampleSize, 0, $sampleSize, $threshold);
-        
+
         // Vérifier le coin inférieur gauche
         $bottomLeftBlack = $this->isAreaDark($image, 0, $height - $sampleSize, $sampleSize, $threshold);
-        
+
         // Un QR code valide doit avoir au moins 2 des 3 carrés de positionnement
         $cornerCount = ($topLeftBlack ? 1 : 0) + ($topRightBlack ? 1 : 0) + ($bottomLeftBlack ? 1 : 0);
-        
+
         return $cornerCount >= 2;
     }
 
@@ -278,10 +280,10 @@ class EnrollmentDocumentController extends Controller
     {
         $darkPixels = 0;
         $totalPixels = 0;
-        
+
         // Échantillonner la zone
-        $step = max(1, (int)($size / 10)); // Échantillonner tous les 10 pixels
-        
+        $step = max(1, (int) ($size / 10)); // Échantillonner tous les 10 pixels
+
         for ($i = $x; $i < $x + $size; $i += $step) {
             for ($j = $y; $j < $y + $size; $j += $step) {
                 if ($i >= 0 && $i < imagesx($image) && $j >= 0 && $j < imagesy($image)) {
@@ -289,10 +291,10 @@ class EnrollmentDocumentController extends Controller
                     $r = ($rgb >> 16) & 0xFF;
                     $g = ($rgb >> 8) & 0xFF;
                     $b = $rgb & 0xFF;
-                    
+
                     // Calculer la luminosité
                     $brightness = (0.299 * $r + 0.587 * $g + 0.114 * $b);
-                    
+
                     if ($brightness < $threshold) {
                         $darkPixels++;
                     }
@@ -300,7 +302,7 @@ class EnrollmentDocumentController extends Controller
                 }
             }
         }
-        
+
         // Si plus de 60% des pixels sont sombres, c'est une zone sombre
         return $totalPixels > 0 && ($darkPixels / $totalPixels) > 0.6;
     }

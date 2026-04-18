@@ -10,6 +10,7 @@ class ExamCenterController extends Controller
     public function index()
     {
         $examCenters = ExamCenter::all();
+
         return response()->json([
             'exam_centers' => $examCenters,
         ]);
@@ -39,7 +40,7 @@ class ExamCenterController extends Controller
     {
         $examCenter = ExamCenter::find($id);
 
-        if (!$examCenter) {
+        if (! $examCenter) {
             return response()->json(['message' => 'Exam center not found'], 404);
         }
 
@@ -52,7 +53,7 @@ class ExamCenterController extends Controller
     {
         $examCenter = ExamCenter::find($id);
 
-        if (!$examCenter) {
+        if (! $examCenter) {
             return response()->json(['message' => 'Exam center not found'], 404);
         }
 
@@ -78,7 +79,7 @@ class ExamCenterController extends Controller
     {
         $examCenter = ExamCenter::find($id);
 
-        if (!$examCenter) {
+        if (! $examCenter) {
             return response()->json(['message' => 'Exam center not found'], 404);
         }
 

@@ -55,7 +55,7 @@ class ContestController extends Controller
     {
         $contest = Contest::with('examCenter', 'depositCenter', 'department', 'filiere', 'user')->find($contestId);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
@@ -91,14 +91,14 @@ class ContestController extends Controller
     public function registerForContest(Request $request, $contestId)
     {
         $candidateId = auth('api')->id();
-        
+
         $contest = Contest::find($contestId);
 
-        if (!$contest) {
+        if (! $contest) {
             return response()->json(['message' => 'Contest not found'], 404);
         }
 
-        if (!$contest->isOpen()) {
+        if (! $contest->isOpen()) {
             return response()->json(['message' => 'Contest registration is closed'], 400);
         }
 
@@ -120,7 +120,7 @@ class ContestController extends Controller
         $enrollment = Enrollment::where('candidate_id', $candidateId)->first();
         if ($enrollment && ($contest->min_age || $contest->max_age)) {
             $ageCheck = $contest->checkAgeRequirements($enrollment->date_of_birth);
-            if (!$ageCheck['valid']) {
+            if (! $ageCheck['valid']) {
                 return response()->json([
                     'message' => $ageCheck['message'],
                     'error_code' => 'AGE_REQUIREMENT_NOT_MET',
@@ -177,7 +177,7 @@ class ContestController extends Controller
             ->where('contest_id', $contestId)
             ->first();
 
-        if (!$registration) {
+        if (! $registration) {
             return response()->json(['message' => 'Registration not found'], 404);
         }
 

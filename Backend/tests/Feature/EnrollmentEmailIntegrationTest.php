@@ -2,17 +2,18 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Enrollment;
 use App\Models\Candidate;
-use App\Models\User;
+use App\Models\Contest;
 use App\Models\Department;
-use App\Models\Filiere;
-use App\Models\ExamCenter;
 use App\Models\DepositCenter;
 use App\Models\EmailDeliveryLog;
+use App\Models\Enrollment;
+use App\Models\ExamCenter;
+use App\Models\Filiere;
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class EnrollmentEmailIntegrationTest extends TestCase
 {
@@ -26,7 +27,7 @@ class EnrollmentEmailIntegrationTest extends TestCase
     {
         $user = User::factory()->create();
         $candidate = Candidate::factory()->create(['email' => 'test@example.com']);
-        
+
         $department = Department::factory()->create();
         $filiere = Filiere::factory()->create(['department_id' => $department->id]);
         $examCenter = ExamCenter::factory()->create();
@@ -102,7 +103,7 @@ class EnrollmentEmailIntegrationTest extends TestCase
         ]);
 
         // Create a contest and payment
-        $contest = \App\Models\Contest::factory()->create();
+        $contest = Contest::factory()->create();
         $paymentDoc->update(['contest_id' => $contest->id]);
 
         Payment::factory()->create([
@@ -132,7 +133,7 @@ class EnrollmentEmailIntegrationTest extends TestCase
 
         // Verify enrollment status is updated
         $this->assertEquals('submitted', $enrollment->fresh()->status);
-        
+
         // Verify email delivery log was created (email was sent)
         $log = EmailDeliveryLog::where('enrollment_id', $enrollment->id)->first();
         $this->assertNotNull($log);

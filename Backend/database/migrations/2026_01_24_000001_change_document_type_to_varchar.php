@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +14,7 @@ return new class extends Migration
             if (DB::getDriverName() !== 'sqlite') {
                 Schema::table('enrollment_documents', function (Blueprint $table) {
                     // Modifier la colonne document_type pour accepter des valeurs plus longues
-                    DB::statement("ALTER TABLE enrollment_documents MODIFY document_type VARCHAR(50) NOT NULL");
+                    DB::statement('ALTER TABLE enrollment_documents MODIFY document_type VARCHAR(50) NOT NULL');
                 });
             }
         }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->json('data')->nullable(); // Données additionnelles (candidate_id, enrollment_id, etc.)
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
-            
+
             $table->index('user_id');
             $table->index('read_at');
         });

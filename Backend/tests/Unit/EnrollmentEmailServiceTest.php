@@ -2,12 +2,13 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\Enrollment;
+use App\Mail\EnrollmentConfirmationMail;
 use App\Models\Candidate;
 use App\Models\EmailDeliveryLog;
+use App\Models\Enrollment;
 use App\Services\EnrollmentEmailService;
 use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class EnrollmentEmailServiceTest extends TestCase
 {
@@ -16,7 +17,7 @@ class EnrollmentEmailServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->emailService = new EnrollmentEmailService();
+        $this->emailService = new EnrollmentEmailService;
         Mail::fake();
     }
 
@@ -31,7 +32,7 @@ class EnrollmentEmailServiceTest extends TestCase
         $result = $this->emailService->sendConfirmationEmail($enrollment);
 
         $this->assertTrue($result);
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class);
+        Mail::assertSent(EnrollmentConfirmationMail::class);
     }
 
     /**
@@ -58,16 +59,16 @@ class EnrollmentEmailServiceTest extends TestCase
         $candidate = Candidate::factory()->create([
             'email' => 'test@example.com',
             'first_name' => 'Jean',
-            'last_name' => 'Dupont'
+            'last_name' => 'Dupont',
         ]);
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'full_name' => 'Jean Dupont'
+            'full_name' => 'Jean Dupont',
         ]);
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             return str_contains($mail->emailBody, 'Jean Dupont');
         });
     }
@@ -82,8 +83,9 @@ class EnrollmentEmailServiceTest extends TestCase
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $content = $mail->emailBody;
+
             return str_contains($content, 'Votre candidature a été soumise avec succès et est en cours de traitement') &&
                    str_contains($content, 'Vous recevrez une réponse d\'ici 24h ou veuillez nous contacter');
         });
@@ -99,8 +101,8 @@ class EnrollmentEmailServiceTest extends TestCase
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) use ($enrollment) {
-            return str_contains($mail->emailBody, (string)$enrollment->id);
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) use ($enrollment) {
+            return str_contains($mail->emailBody, (string) $enrollment->id);
         });
     }
 
@@ -112,13 +114,14 @@ class EnrollmentEmailServiceTest extends TestCase
         $candidate = Candidate::factory()->create(['email' => 'test@example.com']);
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
-            'submitted_at' => now()
+            'submitted_at' => now(),
         ]);
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $content = $mail->emailBody;
+
             // Check for date format (d/m/Y)
             return preg_match('/\d{2}\/\d{2}\/\d{4}/', $content) &&
                    preg_match('/\d{2}:\d{2}/', $content);
@@ -171,8 +174,9 @@ class EnrollmentEmailServiceTest extends TestCase
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $subject = $mail->emailSubject;
+
             return str_contains(strtolower($subject), 'confirmation') ||
                    str_contains(strtolower($subject), 'candidature');
         });
@@ -188,8 +192,9 @@ class EnrollmentEmailServiceTest extends TestCase
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $content = $mail->emailBody;
+
             return str_contains($content, 'richinellelaurence@gmail.com') ||
                    str_contains($content, 'Besoin d\'aide');
         });
@@ -205,8 +210,9 @@ class EnrollmentEmailServiceTest extends TestCase
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $content = $mail->emailBody;
+
             // Check for French keywords
             return str_contains($content, 'Bonjour') &&
                    str_contains($content, 'candidature') &&
@@ -222,23 +228,24 @@ class EnrollmentEmailServiceTest extends TestCase
         $candidate = Candidate::factory()->create([
             'email' => 'test@example.com',
             'first_name' => 'Marie',
-            'last_name' => 'Martin'
+            'last_name' => 'Martin',
         ]);
         $enrollment = Enrollment::factory()->create([
             'candidate_id' => $candidate->id,
             'full_name' => 'Marie Martin',
-            'submitted_at' => now()
+            'submitted_at' => now(),
         ]);
 
         $this->emailService->sendConfirmationEmail($enrollment);
 
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class, function ($mail) use ($enrollment) {
+        Mail::assertSent(EnrollmentConfirmationMail::class, function ($mail) {
             $content = $mail->emailBody;
+
             // Verify placeholders are replaced
-            return !str_contains($content, '{candidate_name}') &&
-                   !str_contains($content, '{enrollment_id}') &&
-                   !str_contains($content, '{submission_date}') &&
-                   !str_contains($content, '{submission_time}');
+            return ! str_contains($content, '{candidate_name}') &&
+                   ! str_contains($content, '{enrollment_id}') &&
+                   ! str_contains($content, '{submission_date}') &&
+                   ! str_contains($content, '{submission_time}');
         });
     }
 
@@ -255,7 +262,7 @@ class EnrollmentEmailServiceTest extends TestCase
         $result = $this->emailService->sendConfirmationEmail($enrollment);
 
         $this->assertTrue($result);
-        Mail::assertSent(\App\Mail\EnrollmentConfirmationMail::class);
+        Mail::assertSent(EnrollmentConfirmationMail::class);
     }
 
     /**

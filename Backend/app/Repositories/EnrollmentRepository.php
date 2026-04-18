@@ -3,8 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\Enrollment;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EnrollmentRepository
 {
@@ -21,27 +21,27 @@ class EnrollmentRepository
         $query = Enrollment::query();
 
         // Apply search filter
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->whereHas('candidate', function ($q) use ($search) {
                 $q->where('first_name', 'ilike', "%{$search}%")
-                  ->orWhere('last_name', 'ilike', "%{$search}%")
-                  ->orWhere('email', 'ilike', "%{$search}%");
+                    ->orWhere('last_name', 'ilike', "%{$search}%")
+                    ->orWhere('email', 'ilike', "%{$search}%");
             });
         }
 
         // Apply status filter
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
         // Apply department filter
-        if (!empty($filters['department_id'])) {
+        if (! empty($filters['department_id'])) {
             $query->where('department_id', $filters['department_id']);
         }
 
         // Apply filière filter
-        if (!empty($filters['filiere_id'])) {
+        if (! empty($filters['filiere_id'])) {
             $query->where('filiere_id', $filters['filiere_id']);
         }
 
@@ -82,7 +82,7 @@ class EnrollmentRepository
             'filiere',
             'documents',
             'auditLogs',
-            'approvalHistory'
+            'approvalHistory',
         ])->find($id);
     }
 
@@ -110,7 +110,7 @@ class EnrollmentRepository
     {
         return Enrollment::whereHas('candidate', function ($q) use ($search) {
             $q->where('first_name', 'like', "%{$search}%")
-              ->orWhere('last_name', 'like', "%{$search}%");
+                ->orWhere('last_name', 'like', "%{$search}%");
         })->get();
     }
 }

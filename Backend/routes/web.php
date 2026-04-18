@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SwaggerController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,8 +14,8 @@ Route::get('/api/docs/json', [SwaggerController::class, 'json'])->name('swagger.
 
 Route::get('/metrics', function () {
     return response(
-        "# HELP app_up Application status\n" .
-        "# TYPE app_up gauge\n" .
+        "# HELP app_up Application status\n".
+        "# TYPE app_up gauge\n".
         "app_up 1\n",
         200
     )->header('Content-Type', 'text/plain; version=0.0.4');

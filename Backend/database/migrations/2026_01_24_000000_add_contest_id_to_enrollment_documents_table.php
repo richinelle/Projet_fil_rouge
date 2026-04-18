@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // Vérifier si la colonne n'existe pas avant de l'ajouter
-        if (Schema::hasTable('enrollment_documents') && !Schema::hasColumn('enrollment_documents', 'contest_id')) {
+        if (Schema::hasTable('enrollment_documents') && ! Schema::hasColumn('enrollment_documents', 'contest_id')) {
             Schema::table('enrollment_documents', function (Blueprint $table) {
                 $table->foreignId('contest_id')->nullable()->constrained('contests')->onDelete('set null')->after('document_type');
             });

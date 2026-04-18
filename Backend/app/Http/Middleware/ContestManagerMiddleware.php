@@ -12,11 +12,10 @@ class ContestManagerMiddleware
     {
         $user = auth('api-users')->user();
 
-        if (!$user || !$user->isContestManager()) {
+        if (! $user || ! $user->isContestManager()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         return $next($request);
     }
 }
-

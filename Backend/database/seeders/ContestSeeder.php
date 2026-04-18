@@ -4,9 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Contest;
 use App\Models\Department;
-use App\Models\Filiere;
-use App\Models\ExamCenter;
 use App\Models\DepositCenter;
+use App\Models\ExamCenter;
+use App\Models\Filiere;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -194,7 +194,7 @@ class ContestSeeder extends Seeder
         ];
 
         foreach ($contests as $contestData) {
-            if ($contestData['filiere_id'] && $contestData['department_id'] && 
+            if ($contestData['filiere_id'] && $contestData['department_id'] &&
                 $contestData['exam_center_id'] && $contestData['deposit_center_id']) {
                 Contest::create($contestData);
             }

@@ -45,7 +45,7 @@ class NotificationController extends Controller
     {
         $notification = NotificationService::markAsRead($notificationId);
 
-        if (!$notification) {
+        if (! $notification) {
             return response()->json(['message' => 'Notification not found'], 404);
         }
 

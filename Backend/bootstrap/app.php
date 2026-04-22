@@ -6,6 +6,8 @@ use App\Http\Middleware\LogAuthAttempts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+
+// ✅ BON middleware CORS (Laravel 10+ / 11)
 use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -16,11 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        // ✅ CORS DOIT être en premier
         $middleware->api(prepend: [
             HandleCors::class,
             LogAuthAttempts::class,
         ]);
 
+        // ✅ Middleware alias
         $middleware->alias([
             'contest_manager' => ContestManagerMiddleware::class,
             'admin' => AdminMiddleware::class,

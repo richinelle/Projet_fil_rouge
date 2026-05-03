@@ -3,8 +3,6 @@ name: CI/CD Backend SGEE
 on:
   push:
     branches: [main]
-    paths:
-      - 'Backend/**'
 
 jobs:
   # ─── 1. ANALYSE SONARQUBE ───────────────────

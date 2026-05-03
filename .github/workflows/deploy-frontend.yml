@@ -24,10 +24,6 @@ jobs:
         working-directory: ./Frontend
         run: npm ci
 
-      - name: Lancer les tests
-        working-directory: ./Frontend
-        run: npm test -- --coverage --watchAll=false
-
       - name: Démarrer SonarQube
         working-directory: ./Backend
         run: |

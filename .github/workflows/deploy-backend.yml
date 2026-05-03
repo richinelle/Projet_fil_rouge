@@ -1,0 +1,79 @@
+name: CI/CD Backend SGEE
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  # ─── 1. ANALYSE SONARQUBE ───────────────────
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Démarrer SonarQube
+        working-directory: ./backend
+        run: |
+          docker compose -f docker-compose.ci.yml up -d
+          echo "Attente démarrage SonarQube (60s)..."
+          sleep 60
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: xdebug
+
+      - name: Installer dépendances Laravel
+        working-directory: ./backend
+        run: composer install --no-interaction
+
+      - name: Lancer les tests
+        working-directory: ./backend
+        run: php artisan test --coverage-clover=coverage.xml
+
+      - name: Analyse SonarQube
+        uses: SonarSource/sonarqube-scan-action@master
+        with:
+          projectBaseDir: ./backend
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: http://localhost:9000
+
+      - name: Arrêter SonarQube
+        working-directory: ./backend
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down
+
+  # ─── 2. DEPLOY FTP (si Sonar OK) ────────────
+  deploy:
+    runs-on: ubuntu-latest
+    needs: sonarqube
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer dépendances Laravel (sans dev)
+        working-directory: ./backend
+        run: composer install --no-interaction --no-dev --optimize-autoloader
+
+      - name: Deploy Laravel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./backend/
+          server-dir: /nguesop.cdwfs.net/backend/
+          exclude: |
+            **/.git*
+            **/.env
+            **/docker-compose*
+            **/docker/**
+            **/Dockerfile
+            **/node_modules/**
+            **/.github/**
+            **/.gitignore

@@ -1,0 +1,19 @@
+name: frontend-app
+
+services:
+
+  react:
+    build:
+      context: .
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api}
+    container_name: SGEE_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    networks:
+      - frontend-net
+
+networks:
+  frontend-net:
+    driver: bridge

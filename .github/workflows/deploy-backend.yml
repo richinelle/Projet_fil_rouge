@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'backend/**'
+      - 'Backend/**'
 
 jobs:
   # ─── 1. ANALYSE SONARQUBE ───────────────────
@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
 
       - name: Démarrer SonarQube
-        working-directory: ./backend
+        working-directory: ./Backend
         run: |
           docker compose -f docker-compose.ci.yml up -d
           echo "Attente démarrage SonarQube (60s)..."

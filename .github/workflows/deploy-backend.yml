@@ -5,20 +5,12 @@ on:
     branches: [main]
 
 jobs:
-  # ─── 1. ANALYSE SONARQUBE ───────────────────
   sonarqube:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Démarrer SonarQube
-        working-directory: ./Backend
-        run: |
-          docker compose -f docker-compose.ci.yml up -d
-          echo "Attente démarrage SonarQube (60s)..."
-          sleep 60
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -28,26 +20,20 @@ jobs:
 
       - name: Installer dépendances Laravel
         working-directory: ./Backend
-        run: composer install --no-interaction
+        run: composer install --no-interaction --ignore-platform-reqs
 
       - name: Lancer les tests
         working-directory: ./Backend
         run: php artisan test --coverage-clover=coverage.xml
 
-      - name: Analyse SonarQube
-        uses: SonarSource/sonarqube-scan-action@master
+      - name: Analyse SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
         with:
           projectBaseDir: ./Backend
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: http://localhost:9000
 
-      - name: Arrêter SonarQube
-        working-directory: ./Backend
-        if: always()
-        run: docker compose -f docker-compose.ci.yml down
-
-  # ─── 2. DEPLOY FTP (si Sonar OK) ────────────
   deploy:
     runs-on: ubuntu-latest
     needs: sonarqube
@@ -56,7 +42,7 @@ jobs:
 
       - name: Installer dépendances Laravel (sans dev)
         working-directory: ./Backend
-        run: composer install --no-interaction --no-dev --optimize-autoloader
+        run: composer install --no-interaction --no-dev --optimize-autoloader --ignore-platform-reqs
 
       - name: Deploy Laravel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -65,7 +51,7 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./Backend/
-          server-dir: /nguesop.cdwfs.net/backend/
+          server-dir: /nguetsop.cdwfs.net/backend/
           exclude: |
             **/.git*
             **/.env

@@ -10,6 +10,10 @@ RUN npm run build
 
 # ── Stage 2 : Servir avec Nginx ────────────────
 FROM nginx:alpine
+
+# ← Mise à jour pour corriger les failles système
+RUN apk update && apk upgrade && rm -rf /var/cache/apk/*
+
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80

@@ -1,6 +1,7 @@
 FROM php:8.4-fpm-bookworm
 
-RUN apt-get update && apt-get install -y \
+# ← Ajoute upgrade pour corriger les failles système
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     git \
     curl \
     zip \

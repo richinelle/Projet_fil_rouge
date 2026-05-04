@@ -26,8 +26,8 @@ jobs:
         working-directory: ./Backend
         run: |
           cp .env.example .env
-          php artisan key:generate
-          php artisan jwt:secret
+          php artisan key:generate --force
+          php artisan jwt:secret --force
 
 
       - name: Lancer les tests

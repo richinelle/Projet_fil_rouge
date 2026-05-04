@@ -78,6 +78,12 @@ jobs:
           extensions: mbstring, pdo, pdo_mysql
           coverage: xdebug
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: Backend/coverage.xml
+
       - name: Installer les dépendances
         working-directory: ./Backend
         run: composer install --no-progress --prefer-dist --ignore-platform-reqs
@@ -131,6 +137,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: Backend/
 
       - name: Analyse SonarCloud
         uses: SonarSource/sonarcloud-github-action@master

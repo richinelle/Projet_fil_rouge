@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import client from '../api/client'
 import '../styles/UserManagement.css'
 
 export default function FiliereManagement() {
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   const [filieres, setFilieres] = useState([])
@@ -18,10 +17,7 @@ export default function FiliereManagement() {
   const [searchQuery, setSearchQuery] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState('all')
   const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    department_id: '',
-    description: '',
+    name: '', code: '', department_id: '', description: '',
   })
 
   useEffect(() => {
@@ -35,12 +31,8 @@ export default function FiliereManagement() {
     try {
       setLoading(true)
       const [filieresRes, deptsRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/manager/filieres', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get('http://localhost:8000/api/manager/departments', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        client.get('/manager/filieres'),
+        client.get('/manager/departments'),
       ])
       setFilieres(filieresRes.data.filieres)
       setDepartments(deptsRes.data.departments)
@@ -56,25 +48,15 @@ export default function FiliereManagement() {
     e.preventDefault()
     setError('')
     setSuccess('')
-
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/manager/filieres/${editingId}`, formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.put(`/manager/filieres/${editingId}`, formData)
         setSuccess('Filière mise à jour avec succès!')
       } else {
-        await axios.post('http://localhost:8000/api/manager/filieres', formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.post('/manager/filieres', formData)
         setSuccess('Filière créée avec succès!')
       }
-      setFormData({
-        name: '',
-        code: '',
-        department_id: '',
-        description: '',
-      })
+      setFormData({ name: '', code: '', department_id: '', description: '' })
       setShowForm(false)
       setEditingId(null)
       setTimeout(() => setSuccess(''), 3000)
@@ -87,10 +69,8 @@ export default function FiliereManagement() {
 
   const handleEdit = (filiere) => {
     setFormData({
-      name: filiere.name,
-      code: filiere.code,
-      department_id: filiere.department_id,
-      description: filiere.description || '',
+      name: filiere.name, code: filiere.code,
+      department_id: filiere.department_id, description: filiere.description || '',
     })
     setEditingId(filiere.id)
     setShowForm(true)
@@ -99,9 +79,7 @@ export default function FiliereManagement() {
   const handleDelete = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette filière?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/manager/filieres/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.delete(`/manager/filieres/${id}`)
         setSuccess('Filière supprimée!')
         setTimeout(() => setSuccess(''), 3000)
         fetchData()
@@ -151,19 +129,11 @@ export default function FiliereManagement() {
         <div className="section-header">
           <h2>Filières ({getFilteredFilieres().length})</h2>
           <div className="header-buttons">
-            <button
-              className="btn btn-primary btn-two-thirds"
-              onClick={() => {
-                setShowForm(!showForm)
-                setEditingId(null)
-                setFormData({
-                  name: '',
-                  code: '',
-                  department_id: '',
-                  description: '',
-                })
-              }}
-            >
+            <button className="btn btn-primary btn-two-thirds" onClick={() => {
+              setShowForm(!showForm)
+              setEditingId(null)
+              setFormData({ name: '', code: '', department_id: '', description: '' })
+            }}>
               {showForm ? 'Annuler' : '+ Nouvelle'}
             </button>
           </div>
@@ -174,96 +144,57 @@ export default function FiliereManagement() {
             <div className="form-row">
               <div className="form-group">
                 <label>Nom de la Filière *</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+                <input type="text" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
               </div>
               <div className="form-group">
                 <label>Code *</label>
-                <input
-                  type="text"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  required
-                />
+                <input type="text" value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })} required />
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label>Département *</label>
-                <select
-                  value={formData.department_id}
-                  onChange={(e) => setFormData({ ...formData, department_id: e.target.value })}
-                  required
-                >
+                <select value={formData.department_id}
+                  onChange={(e) => setFormData({ ...formData, department_id: e.target.value })} required>
                   <option value="">Sélectionner un département</option>
                   {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
+                    <option key={dept.id} value={dept.id}>{dept.name}</option>
                   ))}
                 </select>
               </div>
             </div>
-
             <div className="form-row">
               <div className="form-group">
                 <label>Description</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows="3"
-                />
+                <textarea value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="3" />
               </div>
             </div>
-
             <button type="submit" className="btn btn-primary">
               {editingId ? 'Mettre à jour' : 'Créer la Filière'}
             </button>
           </form>
         )}
 
-        {/* Filters Section */}
         <div className="filters-section">
           <div className="filter-group">
-            <input
-              type="text"
-              placeholder="🔍 Rechercher par nom ou code..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="filter-input"
-            />
+            <input type="text" placeholder="🔍 Rechercher par nom ou code..."
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="filter-input" />
           </div>
-
           <div className="filters-row">
             <div className="filter-group">
               <label>Département:</label>
-              <select
-                value={departmentFilter}
-                onChange={(e) => setDepartmentFilter(e.target.value)}
-                className="filter-select"
-              >
+              <select value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="filter-select">
                 <option value="all">Tous les départements</option>
                 {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id}>
-                    {dept.name}
-                  </option>
+                  <option key={dept.id} value={dept.id}>{dept.name}</option>
                 ))}
               </select>
             </div>
-
             {(searchQuery || departmentFilter !== 'all') && (
-              <button
-                className="filter-reset-btn"
-                onClick={() => {
-                  setSearchQuery('')
-                  setDepartmentFilter('all')
-                }}
-              >
+              <button className="filter-reset-btn" onClick={() => { setSearchQuery(''); setDepartmentFilter('all') }}>
                 ↻ Réinitialiser
               </button>
             )}
@@ -281,24 +212,12 @@ export default function FiliereManagement() {
                   <span className="code-badge">{filiere.code}</span>
                 </div>
                 <div className="card-info">
-                  <p>
-                    <strong>Département:</strong> {getDepartmentName(filiere.department_id)}
-                  </p>
+                  <p><strong>Département:</strong> {getDepartmentName(filiere.department_id)}</p>
                 </div>
                 {filiere.description && <p className="description">{filiere.description}</p>}
                 <div className="card-footer">
-                  <button
-                    className="btn btn-small"
-                    onClick={() => handleEdit(filiere)}
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    className="btn btn-small btn-danger"
-                    onClick={() => handleDelete(filiere.id)}
-                  >
-                    Supprimer
-                  </button>
+                  <button className="btn btn-small" onClick={() => handleEdit(filiere)}>Modifier</button>
+                  <button className="btn btn-small btn-danger" onClick={() => handleDelete(filiere.id)}>Supprimer</button>
                 </div>
               </div>
             ))

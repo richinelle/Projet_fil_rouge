@@ -81,10 +81,10 @@ export default function CandidateManagement() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      setSuccess('Candidats exportés en Excel avec succès')
+      setSuccess('Candidats exportés avec succès')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
-      setError('Erreur lors de l\'exportation Excel')
+      setError('Erreur lors de l\'exportation')
       console.error(err)
     } finally {
       setExporting(false)
@@ -112,15 +112,12 @@ export default function CandidateManagement() {
           </head>
           <body>
             <h1>Liste des Candidats SGEE</h1>
-            <p>Généré le: ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+            <p>Généré le: ${new Date().toLocaleDateString('fr-FR')}</p>
             <table>
               <thead>
                 <tr>
-                  <th>Nom</th>
-                  <th>Email</th>
-                  <th>Téléphone</th>
-                  <th>Statut Email</th>
-                  <th>Date d'inscription</th>
+                  <th>Nom</th><th>Email</th><th>Téléphone</th>
+                  <th>Statut Email</th><th>Date d'inscription</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,10 +148,10 @@ export default function CandidateManagement() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      setSuccess('Candidats exportés en PDF avec succès')
+      setSuccess('Candidats exportés avec succès')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
-      setError('Erreur lors de l\'exportation PDF')
+      setError('Erreur lors de l\'exportation')
       console.error(err)
     } finally {
       setExporting(false)
@@ -202,20 +199,10 @@ export default function CandidateManagement() {
               <option value="verified">Email vérifié</option>
               <option value="unverified">Email non vérifié</option>
             </select>
-            <button
-              onClick={exportToExcel}
-              disabled={exporting || filteredCandidates.length === 0}
-              className="btn btn-success"
-              title="Exporter en Excel"
-            >
+            <button onClick={exportToExcel} disabled={exporting || filteredCandidates.length === 0} className="btn btn-success">
               📊 Excel
             </button>
-            <button
-              onClick={exportToPDF}
-              disabled={exporting || filteredCandidates.length === 0}
-              className="btn btn-danger"
-              title="Exporter en PDF"
-            >
+            <button onClick={exportToPDF} disabled={exporting || filteredCandidates.length === 0} className="btn btn-danger">
               📄 PDF
             </button>
           </div>
@@ -225,12 +212,8 @@ export default function CandidateManagement() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Téléphone</th>
-                <th>Statut Email</th>
-                <th>Inscrit le</th>
-                <th>Actions</th>
+                <th>Nom</th><th>Email</th><th>Téléphone</th>
+                <th>Statut Email</th><th>Inscrit le</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -246,10 +229,7 @@ export default function CandidateManagement() {
                   </td>
                   <td>{new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
                   <td>
-                    <button
-                      className="btn btn-small"
-                      onClick={() => navigate(`/admin/candidates/${c.id}`)}
-                    >
+                    <button className="btn btn-small" onClick={() => navigate(`/admin/candidates/${c.id}`)}>
                       Voir détails
                     </button>
                   </td>

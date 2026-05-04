@@ -51,7 +51,7 @@ jobs:
       - name: Build React
         working-directory: ./Frontend
         env:
-          VITE_API_URL: https://nguesop.cdwfs.net/api
+          VITE_API_URL: https://nguetsop.cdwfs.net/api
         run: npm run build
 
       - name: Deploy React via FTP
@@ -61,7 +61,7 @@ jobs:
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./Frontend/dist/
-          server-dir: /app.nguesop.cdwfs.net/
+          server-dir: /app.nguetsop.cdwfs.net/
           dangerous-clean-slate: true
           exclude: |
             **/.git*

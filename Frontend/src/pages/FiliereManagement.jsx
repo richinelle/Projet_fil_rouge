@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import client from '../api/client'
 import '../styles/UserManagement.css'
 
 export default function FiliereManagement() {
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   const [filieres, setFilieres] = useState([])
@@ -35,12 +34,8 @@ export default function FiliereManagement() {
     try {
       setLoading(true)
       const [filieresRes, deptsRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/manager/filieres', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get('http://localhost:8000/api/manager/departments', {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        client.get('/manager/filieres'),
+        client.get('/manager/departments'),
       ])
       setFilieres(filieresRes.data.filieres)
       setDepartments(deptsRes.data.departments)
@@ -56,25 +51,15 @@ export default function FiliereManagement() {
     e.preventDefault()
     setError('')
     setSuccess('')
-
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8000/api/manager/filieres/${editingId}`, formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.put(`/manager/filieres/${editingId}`, formData)
         setSuccess('Filière mise à jour avec succès!')
       } else {
-        await axios.post('http://localhost:8000/api/manager/filieres', formData, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.post('/manager/filieres', formData)
         setSuccess('Filière créée avec succès!')
       }
-      setFormData({
-        name: '',
-        code: '',
-        department_id: '',
-        description: '',
-      })
+      setFormData({ name: '', code: '', department_id: '', description: '' })
       setShowForm(false)
       setEditingId(null)
       setTimeout(() => setSuccess(''), 3000)
@@ -99,9 +84,7 @@ export default function FiliereManagement() {
   const handleDelete = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette filière?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/manager/filieres/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        await client.delete(`/manager/filieres/${id}`)
         setSuccess('Filière supprimée!')
         setTimeout(() => setSuccess(''), 3000)
         fetchData()
@@ -156,12 +139,7 @@ export default function FiliereManagement() {
               onClick={() => {
                 setShowForm(!showForm)
                 setEditingId(null)
-                setFormData({
-                  name: '',
-                  code: '',
-                  department_id: '',
-                  description: '',
-                })
+                setFormData({ name: '', code: '', department_id: '', description: '' })
               }}
             >
               {showForm ? 'Annuler' : '+ Nouvelle'}
@@ -227,7 +205,6 @@ export default function FiliereManagement() {
           </form>
         )}
 
-        {/* Filters Section */}
         <div className="filters-section">
           <div className="filter-group">
             <input
@@ -238,7 +215,6 @@ export default function FiliereManagement() {
               className="filter-input"
             />
           </div>
-
           <div className="filters-row">
             <div className="filter-group">
               <label>Département:</label>
@@ -255,7 +231,6 @@ export default function FiliereManagement() {
                 ))}
               </select>
             </div>
-
             {(searchQuery || departmentFilter !== 'all') && (
               <button
                 className="filter-reset-btn"
@@ -281,22 +256,14 @@ export default function FiliereManagement() {
                   <span className="code-badge">{filiere.code}</span>
                 </div>
                 <div className="card-info">
-                  <p>
-                    <strong>Département:</strong> {getDepartmentName(filiere.department_id)}
-                  </p>
+                  <p><strong>Département:</strong> {getDepartmentName(filiere.department_id)}</p>
                 </div>
                 {filiere.description && <p className="description">{filiere.description}</p>}
                 <div className="card-footer">
-                  <button
-                    className="btn btn-small"
-                    onClick={() => handleEdit(filiere)}
-                  >
+                  <button className="btn btn-small" onClick={() => handleEdit(filiere)}>
                     Modifier
                   </button>
-                  <button
-                    className="btn btn-small btn-danger"
-                    onClick={() => handleDelete(filiere.id)}
-                  >
+                  <button className="btn btn-small btn-danger" onClick={() => handleDelete(filiere.id)}>
                     Supprimer
                   </button>
                 </div>

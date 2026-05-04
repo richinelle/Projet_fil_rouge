@@ -55,7 +55,7 @@ export default function UserManagement() {
         setActivities(response.data.activities)
       }
       setLoading(false)
-    } catch (err) {
+    } catch {
       setError('Erreur lors du chargement des données')
       setLoading(false)
     }
@@ -88,7 +88,7 @@ export default function UserManagement() {
       await client.put(`/admin/users/${userId}/status`, {})
       setSuccess('Statut utilisateur mis à jour!')
       fetchData()
-    } catch (err) {
+    } catch {
       setError('Erreur lors de la mise à jour')
     }
   }
@@ -116,8 +116,8 @@ export default function UserManagement() {
       const response = await client.get(`/admin/search?q=${query}`)
       setUsers(response.data.users)
       setCandidates(response.data.candidates)
-    } catch (err) {
-      console.error('Erreur de recherche:', err)
+    } catch {
+      setError('Erreur lors de la recherche')
     }
   }
 

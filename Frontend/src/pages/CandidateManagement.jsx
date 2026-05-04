@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import client from '../api/client'
 import '../styles/UserManagement.css'
 
 export default function CandidateManagement() {
   const navigate = useNavigate()
-  const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   const [candidates, setCandidates] = useState([])
@@ -26,9 +25,7 @@ export default function CandidateManagement() {
   const fetchCandidates = async () => {
     try {
       setLoading(true)
-      const response = await axios.get('http://localhost:8000/api/admin/candidates', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await client.get('/admin/candidates')
       setCandidates(response.data.candidates)
       setLoading(false)
     } catch (err) {
@@ -40,16 +37,12 @@ export default function CandidateManagement() {
   const handleSearch = async (e) => {
     const query = e.target.value
     setSearchQuery(query)
-
     if (query.length < 2) {
       fetchCandidates()
       return
     }
-
     try {
-      const response = await axios.get(`http://localhost:8000/api/admin/search?q=${query}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await client.get(`/admin/search?q=${query}`)
       setCandidates(response.data.candidates)
     } catch (err) {
       console.error('Erreur de recherche:', err)
@@ -67,8 +60,6 @@ export default function CandidateManagement() {
     try {
       setExporting(true)
       const filteredCandidates = getFilteredCandidates()
-      
-      // Préparer les données
       const data = filteredCandidates.map(c => ({
         'Nom': c.name,
         'Email': c.email,
@@ -76,15 +67,11 @@ export default function CandidateManagement() {
         'Statut Email': c.email_verified ? 'Vérifié' : 'En attente',
         'Date d\'inscription': new Date(c.created_at).toLocaleDateString('fr-FR')
       }))
-
-      // Créer le CSV
       const headers = Object.keys(data[0])
       const csv = [
         headers.join(','),
         ...data.map(row => headers.map(header => `"${row[header]}"`).join(','))
       ].join('\n')
-
-      // Télécharger
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
@@ -94,7 +81,6 @@ export default function CandidateManagement() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
       setSuccess('Candidats exportés en Excel avec succès')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
@@ -109,9 +95,7 @@ export default function CandidateManagement() {
     try {
       setExporting(true)
       const filteredCandidates = getFilteredCandidates()
-      
-      // Créer un document HTML
-      let html = `
+      const html = `
         <html>
           <head>
             <meta charset="UTF-8">
@@ -140,21 +124,15 @@ export default function CandidateManagement() {
                 </tr>
               </thead>
               <tbody>
-      `
-      
-      filteredCandidates.forEach(c => {
-        html += `
-          <tr>
-            <td>${c.name}</td>
-            <td>${c.email}</td>
-            <td>${c.phone || '-'}</td>
-            <td>${c.email_verified ? 'Vérifié' : 'En attente'}</td>
-            <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
-          </tr>
-        `
-      })
-      
-      html += `
+                ${filteredCandidates.map(c => `
+                  <tr>
+                    <td>${c.name}</td>
+                    <td>${c.email}</td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${c.email_verified ? 'Vérifié' : 'En attente'}</td>
+                    <td>${new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
+                  </tr>
+                `).join('')}
               </tbody>
             </table>
             <div class="footer">
@@ -164,8 +142,6 @@ export default function CandidateManagement() {
           </body>
         </html>
       `
-      
-      // Créer et télécharger le PDF
       const blob = new Blob([html], { type: 'text/html;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
@@ -175,7 +151,6 @@ export default function CandidateManagement() {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
       setSuccess('Candidats exportés en PDF avec succès')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
@@ -218,8 +193,8 @@ export default function CandidateManagement() {
               onChange={handleSearch}
               className="search-input"
             />
-            <select 
-              value={filterStatus} 
+            <select
+              value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="filter-select"
             >
@@ -227,7 +202,7 @@ export default function CandidateManagement() {
               <option value="verified">Email vérifié</option>
               <option value="unverified">Email non vérifié</option>
             </select>
-            <button 
+            <button
               onClick={exportToExcel}
               disabled={exporting || filteredCandidates.length === 0}
               className="btn btn-success"
@@ -235,7 +210,7 @@ export default function CandidateManagement() {
             >
               📊 Excel
             </button>
-            <button 
+            <button
               onClick={exportToPDF}
               disabled={exporting || filteredCandidates.length === 0}
               className="btn btn-danger"
@@ -261,9 +236,7 @@ export default function CandidateManagement() {
             <tbody>
               {filteredCandidates.map((c) => (
                 <tr key={c.id}>
-                  <td>
-                    <strong>{c.name}</strong>
-                  </td>
+                  <td><strong>{c.name}</strong></td>
                   <td>{c.email}</td>
                   <td>{c.phone || '-'}</td>
                   <td>
@@ -273,7 +246,7 @@ export default function CandidateManagement() {
                   </td>
                   <td>{new Date(c.created_at).toLocaleDateString('fr-FR')}</td>
                   <td>
-                    <button 
+                    <button
                       className="btn btn-small"
                       onClick={() => navigate(`/admin/candidates/${c.id}`)}
                     >

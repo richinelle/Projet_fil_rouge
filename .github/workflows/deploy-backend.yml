@@ -22,6 +22,13 @@ jobs:
         working-directory: ./Backend
         run: composer install --no-interaction --ignore-platform-reqs
 
+      - name: Préparer environnement Laravel
+        working-directory: ./Backend
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+
       - name: Lancer les tests
         working-directory: ./Backend
         run: php artisan test --coverage-clover=coverage.xml

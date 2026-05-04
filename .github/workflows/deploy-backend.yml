@@ -57,7 +57,6 @@ jobs:
     name: Tests PHPUnit
     runs-on: ubuntu-latest
     needs: docker
-
     services:
       mysql:
         image: mysql:8.0
@@ -67,7 +66,6 @@ jobs:
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
       - uses: actions/checkout@v4
 
@@ -77,12 +75,6 @@ jobs:
           php-version: '8.4'
           extensions: mbstring, pdo, pdo_mysql
           coverage: xdebug
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: Backend/coverage.xml
 
       - name: Installer les dépendances
         working-directory: ./Backend
@@ -109,6 +101,11 @@ jobs:
         working-directory: ./Backend
         run: php artisan test --coverage-clover=coverage.xml
 
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: Backend/coverage.xml
   # ─────────────────────────────────────────
   # JOB 4 : Scan Trivy
   # ─────────────────────────────────────────
